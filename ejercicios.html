@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejercicios - Dependencias Funcionales y 2FN</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+        }
+        
+        .title-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .slide {
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .nav-button {
+            transition: all 0.3s ease;
+        }
+        
+        .nav-button:hover {
+            transform: scale(1.05);
+        }
+        
+        .progress-bar {
+            height: 4px;
+            background: linear-gradient(to right, #4f46e5, #7c3aed);
+        }
+        
+        .table-example {
+            border-collapse: collapse;
+            background: white;
+        }
+    </style>
+</head>
+<body class="text-zinc-900 overflow-hidden">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-white border-b border-zinc-200 py-4 px-8 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-2xl">📝</div>
+                <div>
+                    <h1 class="title-font text-2xl font-semibold tracking-tight">Ejercicios Prácticos</h1>
+                    <p class="text-xs text-zinc-500 -mt-1">Dependencias Funcionales • 2FN</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-6">
+                <div id="slide-counter" class="text-sm font-mono text-zinc-500">01 / 06</div>
+                <div class="flex gap-2">
+                    <button onclick="prevSlide()" class="nav-button w-11 h-11 bg-white border border-zinc-300 hover:border-zinc-400 rounded-2xl flex items-center justify-center text-xl shadow">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button onclick="nextSlide()" class="nav-button w-11 h-11 bg-indigo-600 text-white hover:bg-indigo-700 rounded-2xl flex items-center justify-center text-xl shadow">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Progress -->
+        <div class="h-1 bg-zinc-100">
+            <div id="progress" class="progress-bar w-1/6"></div>
+        </div>
+
+        <!-- Slides -->
+        <div id="slides" class="flex-1 relative overflow-hidden">
+
+            <!-- SLIDE 1: Título -->
+            <div id="slide-1" class="slide absolute inset-0 flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-violet-50 active-slide">
+                <div class="max-w-3xl text-center px-8">
+                    <h1 class="title-font text-6xl font-bold tracking-tighter mb-4 text-zinc-900">Ejercicios Prácticos</h1>
+                    <p class="text-3xl text-indigo-600 font-medium">Dependencias Funcionales y Segunda Forma Normal</p>
+                </div>
+            </div>
+
+            <!-- SLIDE 2: Ejercicio 1 -->
+            <div id="slide-2" class="slide hidden absolute inset-0 bg-white overflow-auto">
+                <div class="max-w-5xl mx-auto px-8 py-10">
+                    <div class="flex justify-between mb-6">
+                        <div>
+                            <span class="px-4 py-1.5 bg-amber-100 text-amber-700 font-medium rounded-3xl text-sm">EJERCICIO 1</span>
+                            <h2 class="title-font text-4xl font-semibold mt-4">El Desafío de la Gestión de Proyectos</h2>
+                        </div>
+                        <button onclick="showHint(1)" class="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl flex items-center gap-2 font-medium">
+                            <i class="fas fa-lightbulb"></i> Pista
+                        </button>
+                    </div>
+
+                    <p class="text-lg mb-6"><strong>Objetivo:</strong> Realizar el diagnóstico técnico y el mapeo de dependencias funcionales (DF).</p>
+
+                    <p class="mb-6"><strong>Caso:</strong> Una empresa utiliza la siguiente tabla (ya cumple con 1FN):</p>
+
+                    <div class="bg-white border border-zinc-200 rounded-3xl p-8 mb-8 shadow-sm">
+                        <table class="table-example w-full text-base">
+                            <thead>
+                                <tr class="bg-zinc-100">
+                                    <th class="p-4 text-left">ID_Empleado (PK)</th>
+                                    <th class="p-4 text-left">ID_Proyecto (PK)</th>
+                                    <th class="p-4 text-left">Nombre_Empleado</th>
+                                    <th class="p-4 text-left">Horas_Trabajadas</th>
+                                    <th class="p-4 text-left">Ciudad_Proyecto</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-zinc-700">
+                                <tr class="border-t"><td class="p-4">10</td><td class="p-4">P1</td><td class="p-4">Juan Pérez</td><td class="p-4">20</td><td class="p-4">Montevideo</td></tr>
+                                <tr class="border-t"><td class="p-4">20</td><td class="p-4">P1</td><td class="p-4">Ana García</td><td class="p-4">15</td><td class="p-4">Montevideo</td></tr>
+                                <tr class="border-t"><td class="p-4">10</td><td class="p-4">P2</td><td class="p-4">Juan Pérez</td><td class="p-4">10</td><td class="p-4">Salto</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="bg-zinc-50 border border-zinc-200 rounded-3xl p-8">
+                        <strong>Consigna:</strong>
+                        <ol class="list-decimal pl-6 mt-4 space-y-3 text-zinc-700">
+                            <li>Identificar la PK: Justifiquen por qué la clave debe ser compuesta.</li>
+                            <li>Mapear las DF usando notación A → B.</li>
+			    <li>Clasificar las dependencias (Totales y Parciales).</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 3: Ejercicio 2 - Caso A -->
+            <div id="slide-3" class="slide hidden absolute inset-0 bg-white overflow-auto">
+                <div class="max-w-5xl mx-auto px-8 py-10">
+                    <div class="flex justify-between mb-6">
+                        <div>
+                            <span class="px-4 py-1.5 bg-violet-100 text-violet-700 font-medium rounded-3xl text-sm">EJERCICIO 2 - Caso A</span>
+                            <h2 class="title-font text-4xl font-semibold mt-4">Descomposición de "Suministros"</h2>
+                        </div>
+                        <button onclick="showHint(2)" class="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl flex items-center gap-2 font-medium">
+                            <i class="fas fa-lightbulb"></i> Pista
+                        </button>
+                    </div>
+
+                    <p class="text-lg mb-6">Se detectaron las siguientes dependencias:</p>
+                    <ul class="space-y-3 text-zinc-700 mb-8">
+                        <li>• <strong>ID_Proveedor, ID_Articulo → Cantidad_Enviada</strong> (DF Total)</li>
+                        <li>• <strong>ID_Proveedor → Nombre_Proveedor</strong> (DF Parcial)</li>
+                        <li>• <strong>ID_Articulo → Descripcion_Articulo</strong> (DF Parcial)</li>
+                    </ul>
+
+                    <div class="bg-zinc-50 border border-zinc-200 rounded-3xl p-8">
+                        <strong>Tarea:</strong><br>
+                        Descomponer la tabla original y crear las nuevas tablas para cumplir con la 2FN.<br>
+                        Justificar por qué esta separación elimina la redundancia.
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 4: Ejercicio 2 - Caso B -->
+            <div id="slide-4" class="slide hidden absolute inset-0 bg-white overflow-auto">
+                <div class="max-w-5xl mx-auto px-8 py-10">
+                    <div class="flex justify-between mb-6">
+                        <div>
+                            <span class="px-4 py-1.5 bg-emerald-100 text-emerald-700 font-medium rounded-3xl text-sm">EJERCICIO 2 - Caso B</span>
+                            <h2 class="title-font text-4xl font-semibold mt-4">Validación del "Atajo Lógico"</h2>
+                        </div>
+                        <button onclick="showHint(3)" class="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl flex items-center gap-2 font-medium">
+                            <i class="fas fa-lightbulb"></i> Pista
+                        </button>
+                    </div>
+
+                    <p class="text-lg mb-6"><strong>Tabla de Productos:</strong></p>
+                    <div class="inline-block bg-white border border-zinc-200 rounded-2xl p-6 mb-8">
+                        Atributos: <strong>Código_Barras (PK)</strong>, Precio, Stock
+                    </div>
+                    <p class="text-lg">La tabla ya está en 1FN.</p>
+
+                    <div class="bg-zinc-50 border border-zinc-200 rounded-3xl p-8 mt-8">
+                        <strong>Tarea:</strong><br>
+                        Determinar si es necesario analizar dependencias parciales.<br>
+                        Justificar usando la <strong>"Regla de Oro"</strong> si la tabla ya está en 2FN.
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 5: Conclusión -->
+            <div id="slide-5" class="slide hidden absolute inset-0 bg-gradient-to-br from-emerald-50 to-white flex items-center justify-center">
+                <div class="text-center">
+                    <div class="text-7xl mb-6">✅</div>
+                    <h2 class="title-font text-5xl font-bold text-zinc-900">¡Ejercicios Completados!</h2>
+                    <p class="text-xl text-zinc-600 mt-4 max-w-md mx-auto">Practica estos ejercicios para reforzar el diagnóstico y resolución de dependencias funcionales.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="bg-white border-t border-zinc-200 py-4 px-8 text-sm text-zinc-600 flex justify-between">
+            <button onclick="toggleHint()" class="flex items-center gap-2 hover:text-zinc-900">
+                <i class="fas fa-lightbulb"></i>
+                <span>Pista General</span>
+            </button>
+            <div class="text-xs font-mono">← → Navegación con flechas</div>
+        </footer>
+    </div>
+
+    <!-- Hint Modal -->
+    <div id="hint-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+        <div class="bg-white max-w-md w-full mx-4 rounded-3xl p-8">
+            <h3 class="text-xl font-semibold mb-4 flex items-center gap-3">
+                <i class="fas fa-lightbulb text-amber-500"></i> Pista
+            </h3>
+            <div id="hint-content" class="text-zinc-600 leading-relaxed"></div>
+            <button onclick="closeHint()" class="mt-8 w-full py-4 bg-zinc-100 hover:bg-zinc-200 rounded-2xl">Cerrar</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 5;
+
+        function updateUI() {
+            document.querySelectorAll('.slide').forEach(s => s.classList.add('hidden'));
+            document.getElementById(`slide-${currentSlide}`).classList.remove('hidden');
+
+            document.getElementById('slide-counter').textContent = `${currentSlide.toString().padStart(2, '0')} / ${totalSlides}`;
+            const progress = ((currentSlide - 1) / (totalSlides - 1)) * 100;
+            document.getElementById('progress').style.width = `${progress}%`;
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                currentSlide++;
+                updateUI();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 1) {
+                currentSlide--;
+                updateUI();
+            }
+        }
+
+        const hints = {
+            1: "Recuerda que una clave compuesta es necesaria cuando un empleado puede estar en varios proyectos y un proyecto puede tener varios empleados.",
+            2: "Las dependencias parciales se resuelven creando tablas separadas para cada determinante.",
+            3: "Si la clave primaria es un solo atributo, normalmente no hay dependencias parciales (Regla de Oro)."
+        };
+
+        function showHint(n) {
+            document.getElementById('hint-content').innerHTML = hints[n] || "Analiza paso a paso las dependencias.";
+            document.getElementById('hint-modal').classList.remove('hidden');
+        }
+
+        function toggleHint() {
+            document.getElementById('hint-modal').classList.toggle('hidden');
+        }
+
+        function closeHint() {
+            document.getElementById('hint-modal').classList.add('hidden');
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === "ArrowRight") nextSlide();
+            if (e.key === "ArrowLeft") prevSlide();
+        });
+
+        window.onload = updateUI;
+    </script>
+</body>
+</html>

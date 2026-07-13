@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taller de Normalización: 3FN</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --bg-light: #f9fbfd;
+            --text-dark: #2c3e50;
+            --white: #ffffff;
+            --success: #27ae60;
+            --hint-bg: #fdf2e9;
+            --hint-border: #e67e22;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 3rem 1rem;
+            text-align: center;
+            background-image: linear-gradient(rgba(44, 62, 80, 0.8), rgba(44, 62, 80, 0.8)), url('https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&q=80&w=1000');
+            background-size: cover;
+            background-position: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .exercise-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 0;
+            margin-bottom: 3rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .exercise-content {
+            padding: 2rem;
+        }
+
+        .exercise-header {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 1.5rem 2rem;
+        }
+
+        /* Estilo para las imágenes de los ejercicios */
+        .exercise-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-bottom: 4px solid var(--accent-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: var(--primary-color);
+        }
+
+        .btn-hint {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .btn-hint:hover {
+            background-color: #2980b9;
+            transform: scale(1.05);
+        }
+
+        .hint-box {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background-color: var(--hint-bg);
+            border: 1px dashed var(--hint-border);
+            border-radius: 8px;
+            color: #d35400;
+        }
+
+        .task-box {
+            background-color: #e8f4fd;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 5px solid var(--accent-color);
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Tercera Forma Normal</h1>
+    <p>Dominando las Dependencias Transitivas</p>
+</header>
+
+<div class="container">
+
+    <!-- Ejercicio 1 -->
+    <div class="exercise-card">
+        <img src="https://images.unsplash.com/photo-1523050853063-bd8012fec20b?auto=format&fit=crop&q=80&w=800" alt="Estudiantes universitarios" class="exercise-image">
+        <div class="exercise-header">
+            <h2>Caso 1: Gestión de Facultades</h2>
+        </div>
+        <div class="exercise-content">
+            <p>En este escenario, registramos alumnos y sus carreras. La clave primaria es <strong>ID_Estudiante</strong>.</p>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID_Estudiante (PK)</th>
+                        <th>Nombre_Alumno</th>
+                        <th>ID_Carrera</th>
+                        <th>Nombre_Carrera</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>101</td>
+                        <td>Juan Pérez</td>
+                        <td>ING-01</td>
+                        <td>Ingeniería Software</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="task-box">
+                <strong>Desafío:</strong> Identifica el atributo que no depende de la clave primaria de forma directa y explica la solución.
+            </div>
+
+            <button class="btn-hint" onclick="toggleHint('hint1')">💡 Ver Pista Educativa</button>
+            <div id="hint1" class="hint-box">
+                Observa si el <strong>Nombre_Carrera</strong> se mantendría igual aunque el alumno Juan Pérez no existiera. Si la carrera existe independientemente del alumno, hay una dependencia transitiva a través del ID_Carrera.
+            </div>
+        </div>
+    </div>
+
+    <!-- Ejercicio 2 -->
+    <div class="exercise-card">
+        <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=800" alt="Almacén de logística" class="exercise-image">
+        <div class="exercise-header">
+            <h2>Caso 2: Inventario y Proveedores</h2>
+        </div>
+        <div class="exercise-content">
+            <p>Analiza esta tabla de productos donde la clave primaria es <strong>ID_Producto</strong>.</p>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID_Producto (PK)</th>
+                        <th>Descripción</th>
+                        <th>ID_Proveedor</th>
+                        <th>Web_Proveedor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>PROD-55</td>
+                        <td>Disco SSD 1TB</td>
+                        <td>SUP-99</td>
+                        <td>www.tecnosupply.com</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="task-box">
+                <strong>Desafío:</strong> Aplica el algoritmo de descomposición para eliminar la redundancia del proveedor.
+            </div>
+
+            <button class="btn-hint" onclick="toggleHint('hint2')">💡 Ver Pista Educativa</button>
+            <div id="hint2" class="hint-box">
+                ¿La <strong>Web_Proveedor</strong> describe una característica del "Disco SSD" o describe al "Proveedor"? Si describe al proveedor, éste debe ser la clave primaria de su propia tabla.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleHint(id) {
+        const hint = document.getElementById(id);
+        hint.style.display = (hint.style.display === "block") ? "none" : "block";
+    }
+</script>
+
+</body>
+</html>

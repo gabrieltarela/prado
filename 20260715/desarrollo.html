@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desarrollo: 3FN e Interactividad</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --bg: #f4f7f6;
+            --white: #ffffff;
+            --warning: #e67e22;
+            --success: #27ae60;
+            --danger: #c0392b;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Cronómetros */
+        #timers-container {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .timer-box {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-right: 5px solid var(--accent);
+            text-align: right;
+            transition: all 0.3s ease;
+            min-width: 140px;
+        }
+
+        .timer-label { font-size: 0.65rem; font-weight: bold; color: #7f8c8d; text-transform: uppercase; margin: 0; }
+        .timer-val { font-size: 1.4rem; font-weight: bold; color: var(--primary); margin: 0; }
+
+        .urgent-alert {
+            background-color: var(--danger) !important;
+            animation: blinker 1s linear infinite;
+        }
+        .urgent-alert .timer-val, .urgent-alert .timer-label { color: white !important; }
+
+        @keyframes blinker { 50% { opacity: 0.7; } }
+
+        /* Contenedor de Diapositivas */
+        .slide-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+            max-width: 1050px;
+            height: 75vh;
+            background: var(--white);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            flex-direction: column;
+            animation: fadeIn 0.4s ease;
+        }
+        .slide.active { display: flex; }
+
+        .slide-header { background-color: var(--primary); color: white; padding: 1rem 2rem; }
+        .slide-body { padding: 2rem; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
+
+        .flex-row { display: flex; gap: 30px; align-items: center; }
+        .slide-img { width: 45%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #f8f9fa; }
+        .pk { border-bottom: 3px solid var(--primary); font-weight: bold; }
+        
+        .highlight-warn { background-color: #fff3e0; border: 2px solid var(--warning) !important; font-weight: bold; }
+        .highlight-ok { background-color: #e8f5e9; border: 2px solid var(--success) !important; font-weight: bold; }
+
+        /* Navegación */
+        .nav-controls {
+            padding: 15px;
+            background: var(--white);
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            border-top: 1px solid #ddd;
+        }
+
+        button { padding: 10px 30px; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-prev { background: #ecf0f1; color: var(--primary); }
+        .btn-next { background: var(--accent); color: white; }
+        button:disabled { opacity: 0.3; }
+
+        .questions-list { list-style: none; padding: 0; }
+        .questions-list li { 
+            background: #f0f7ff; 
+            margin-bottom: 15px; 
+            padding: 20px; 
+            border-radius: 10px; 
+            border-left: 5px solid var(--accent);
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div id="timers-container">
+        <div id="box-total" class="timer-box">
+            <p class="timer-label">Desarrollo (Total)</p>
+            <div id="timer-total" class="timer-val">15:00</div>
+        </div>
+        <div id="box-slide" class="timer-box">
+            <p class="timer-label">Slide Actual</p>
+            <div id="timer-slide" class="timer-val">--:--</div>
+        </div>
+    </div>
+
+    <div class="slide-container">
+        <!-- Slide 1 -->
+        <div class="slide active">
+            <div class="slide-header"><h2>1. Pre-requisito: Tabla en 2FN</h2></div>
+            <div class="slide-body">
+                <div class="flex-row">
+                    <img src="https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&q=80&w=500" class="slide-img">
+                    <div>
+                        <p>Para diagnosticar la <strong>3FN</strong>, primero aseguramos que la tabla ya esté en 2FN.</p>
+                        <ul>
+                            <li>Sin dependencias parciales.</li>
+                            <li>Atributos correctamente atomizados.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2 -->
+        <div class="slide">
+            <div class="slide-header"><h2>2. Dependencia Transitiva (A → B → C)</h2></div>
+            <div class="slide-body">
+                <div class="flex-row">
+                    <img src="https://images.unsplash.com/photo-1504868584819-f8e90526354c?auto=format&fit=crop&q=80&w=500" class="slide-img">
+                    <div>
+                        <p>Ocurre cuando un atributo no clave depende de la PK de forma <strong>indirecta</strong>.</p>
+                        <p style="font-weight: bold; color: var(--accent);">ID_Socio (PK) → ID_Ciudad → Nombre_Ciudad</p>
+                        <p>La ciudad depende del socio solo a través de un intermediario no clave.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3 -->
+        <div class="slide">
+            <div class="slide-header"><h2>3. Detectando el "Síntoma"</h2></div>
+            <div class="slide-body">
+                <table>
+                    <tr><th class="pk">ID_Socio (PK)</th><th>Nombre</th><th class="highlight-warn">ID_Ciudad</th><th class="highlight-warn">Nombre_Ciudad</th></tr>
+                    <tr><td>101</td><td>Gabriel Tarela</td><td class="highlight-warn">C-01</td><td class="highlight-warn">Montevideo</td></tr>
+                    <tr><td>102</td><td>Ana Pérez</td><td class="highlight-warn">C-01</td><td class="highlight-warn">Montevideo</td></tr>
+                </table>
+                <p><em>Síntoma:</em> El <strong>Nombre_Ciudad</strong> depende del <strong>ID_Ciudad</strong>, no de la clave primaria.</p>
+            </div>
+        </div>
+
+        <!-- Slide 4 -->
+        <div class="slide">
+            <div class="slide-header"><h2>4. Criterio de la 3FN</h2></div>
+            <div class="slide-body">
+                <div style="background: #e8f4fd; padding: 15px; border-radius: 8px; text-align: center;">
+                    <span style="font-weight: bold; color: var(--accent);">"The Key, the Whole Key, and Nothing but the Key"</span>
+                </div>
+                <table>
+                    <tr><th class="pk">ID_Socio (PK)</th><th>Nombre</th><th class="highlight-ok">ID_Ciudad (FK)</th></tr>
+                    <tr><td>101</td><td>Gabriel Tarela</td><td class="highlight-ok">C-01</td></tr>
+                </table>
+                <p>Cada atributo debe depender <strong>únicamente</strong> de la clave primaria.</p>
+            </div>
+        </div>
+
+        <!-- Slide 5 -->
+        <div class="slide">
+            <div class="slide-header"><h2>5. Algoritmo de Descomposición</h2></div>
+            <div class="slide-body">
+                <div style="display: flex; gap: 20px;">
+                    <div style="flex: 1;">
+                        <strong>Tabla: SOCIOS</strong>
+                        <table><tr><th class="pk">ID_Socio</th><th>Nombre</th><th>ID_Ciudad (FK)</th></tr><tr><td>101</td><td>Gabriel</td><td>C-01</td></tr></table>
+                    </div>
+                    <div style="flex: 1;">
+                        <strong>Tabla: CIUDADES</strong>
+                        <table><tr><th class="highlight-ok">ID_Ciudad (PK)</th><th class="highlight-ok">Nombre_Ciudad</th></tr><tr><td>C-01</td><td>Montevideo</td></tr></table>
+                    </div>
+                </div>
+                <p>El determinante de la transitiva se convierte en la <strong>nueva PK</strong>.</p>
+            </div>
+        </div>
+
+        <!-- Slide 6 (NUEVA: Cierre y Síntesis) -->
+        <div class="slide">
+            <div class="slide-header"><h2>6. Cierre y Síntesis</h2></div>
+            <div class="slide-body">
+                <p>Evaluemos lo aprendido hoy sobre la 3FN:</p>
+                <ul class="questions-list">
+                    <li>¿Cómo llamamos al problema cuando un dato depende de un atributo que no es la clave?</li>
+                    <li>¿En qué se convierte el determinante de la dependencia transitiva al crear la tabla nueva?</li>
+                    <li>¿Es posible que una tabla esté en 3FN si no cumple con la 2FN?</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-controls">
+        <button class="btn-prev" onclick="changeSlide(-1)" id="prevBtn" disabled>Anterior</button>
+        <button class="btn-next" onclick="changeSlide(1)" id="nextBtn">Siguiente</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        let totalSeconds = 15 * 60; 
+        let slideSeconds = totalSeconds / slides.length;
+
+        function updateTimers() {
+            const mins = Math.floor(totalSeconds / 60);
+            const secs = totalSeconds % 60;
+            document.getElementById('timer-total').textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            
+            const boxTotal = document.getElementById('box-total');
+            if (totalSeconds < 60) boxTotal.classList.add('urgent-alert');
+            else boxTotal.classList.remove('urgent-alert');
+
+            const sMins = Math.floor(slideSeconds / 60);
+            const sSecs = Math.floor(slideSeconds % 60);
+            document.getElementById('timer-slide').textContent = `${sMins}:${sSecs < 10 ? '0' : ''}${sSecs}`;
+            
+            const boxSlide = document.getElementById('box-slide');
+            if (slideSeconds < 15) boxSlide.classList.add('urgent-alert');
+            else boxSlide.classList.remove('urgent-alert');
+
+            if (totalSeconds > 0) totalSeconds--;
+            if (slideSeconds > 0) slideSeconds--;
+        }
+
+        function changeSlide(dir) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide += dir;
+            slides[currentSlide].classList.add('active');
+            const remainingSlides = slides.length - currentSlide;
+            if (remainingSlides > 0) slideSeconds = totalSeconds / remainingSlides;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === slides.length - 1;
+        }
+
+        setInterval(updateTimers, 1000);
+        updateTimers();
+    </script>
+</body>
+</html>

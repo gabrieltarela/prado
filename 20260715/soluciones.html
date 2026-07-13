@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soluciones: Tercera Forma Normal (3FN)</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #27ae60;
+            --bg: #f4f7f6;
+            --text: #2c3e50;
+            --white: #ffffff;
+            --transitive: #e67e22;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 3rem 1rem;
+            text-align: center;
+            background-image: linear-gradient(rgba(44, 62, 80, 0.9), rgba(44, 62, 80, 0.9)), url('https://images.unsplash.com/photo-1454165833267-028cc21e78e7?auto=format&fit=crop&q=80&w=1000');
+            background-size: cover;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .solution-card {
+            background: var(--white);
+            border-radius: 15px;
+            margin-bottom: 3rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border-top: 6px solid var(--accent);
+        }
+
+        .solution-header {
+            background-color: #f8f9fa;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .logic-box {
+            background-color: #eafaf1;
+            border-left: 5px solid var(--accent);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+        }
+
+        h3 {
+            color: var(--primary);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 0.5rem;
+            margin-top: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            border: 1px solid #dfe6e9;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .pk { color: #e67e22; font-weight: bold; }
+        .fk { color: #3498db; font-weight: bold; }
+
+        .table-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Resolución Técnica 3FN</h1>
+    <p>Eliminando la Dependencia Transitiva para un diseño profesional</p>
+</header>
+
+<div class="container">
+
+    <!-- Solución Ejercicio 1 -->
+    <div class="solution-card">
+        <div class="solution-header">
+            <h2>Caso 1: Gestión de Facultades</h2>
+        </div>
+        <div class="content">
+            <p><strong>Problema detectado:</strong> En la tabla de alumnos, el nombre de la carrera se repetía por cada estudiante. Aunque la tabla estaba en 2FN (clave atómica), presentaba una determinación indirecta.</p>
+            
+            <h3>1. Diagnóstico de Dependencia Transitiva</h3>
+            <p>Usando la notación <strong>A → B → C</strong>:</p>
+            <ul>
+                <li><strong>ID_Estudiante (PK) → ID_Carrera</strong> (Determinación directa)</li>
+                <li><strong>ID_Carrera → Nombre_Carrera</strong> (Determinación entre atributos no clave)</li>
+            </ul>
+
+            <div class="logic-box">
+                <strong>Justificación:</strong> El dato "Nombre_Carrera" no depende del alumno, sino del dato intermedio "ID_Carrera". Responde al síntoma: <em>¿Este dato depende de la clave primaria o de otro dato que no es clave?</em> [2].
+            </div>
+
+            <h3>2. Resultado de la Descomposición</h3>
+            <div class="table-grid">
+                <div>
+                    <h4>Tabla: ALUMNOS</h4>
+                    <table>
+                        <tr><th>ID_Estudiante <span class="pk">(PK)</span></th><th>Nombre</th><th>ID_Carrera <span class="fk">(FK)</span></th></tr>
+                        <tr><td>101</td><td>Juan Pérez</td><td>ING-01</td></tr>
+                    </table>
+                </div>
+                <div>
+                    <h4>Tabla: CARRERAS</h4>
+                    <table>
+                        <tr><th>ID_Carrera <span class="pk">(PK)</span></th><th>Nombre_Carrera</th></tr>
+                        <tr><td>ING-01</td><td>Ingeniería Software</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Solución Ejercicio 2 -->
+    <div class="solution-card" style="border-top-color: #3498db;">
+        <div class="solution-header">
+            <h2>Caso 2: Inventario y Proveedores</h2>
+        </div>
+        <div class="content">
+            <p><strong>Problema detectado:</strong> La información web del proveedor estaba "incrustada" en la tabla de productos, generando anomalías de actualización [4].</p>
+            
+            <h3>1. Análisis de Determinación</h3>
+            <ul>
+                <li>ID_Producto (PK) → ID_Proveedor</li>
+                <li><strong>ID_Proveedor → Web_Proveedor</strong> (¡Transitiva!)</li>
+            </ul>
+
+            <div class="logic-box" style="background-color: #ebf5fb; border-left-color: #3498db;">
+                <strong>Diagnóstico:</strong> La "Web_Proveedor" es un atributo del proveedor, no una característica física del producto. Si el proveedor cambia su web, tendríamos que actualizar miles de filas en lugar de una sola.
+            </div>
+
+            <h3>2. Esquema Normalizado</h3>
+            <p>El determinante transitivo (ID_Proveedor) se convierte en la <strong>nueva Clave Primaria</strong> de su propia entidad [1, 2].</p>
+
+            <div class="table-grid">
+                <div>
+                    <h4>Tabla: PRODUCTOS</h4>
+                    <table>
+                        <tr><th>ID_Producto <span class="pk">(PK)</span></th><th>Descripción</th><th>ID_Proveedor <span class="fk">(FK)</span></th></tr>
+                        <tr><td>PROD-55</td><td>Disco SSD 1TB</td><td>SUP-99</td></tr>
+                    </table>
+                </div>
+                <div>
+                    <h4>Tabla: PROVEEDORES</h4>
+                    <table>
+                        <tr><th>ID_Proveedor <span class="pk">(PK)</span></th><th>Web_Proveedor</th></tr>
+                        <tr><td>SUP-99</td><td>www.tecnosupply.com</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    <p>Guía de Soluciones para la clase de Normalización (3FN) - ITI 2026</p>
+</footer>
+
+</body>
+</html>

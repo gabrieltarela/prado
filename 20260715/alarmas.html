@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Timer Docente · Etapas de Clase (45 min)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: #1e293b;
+            border-radius: 60px;
+            padding: 50px 40px 40px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            border: 2px solid #334155;
+            transition: border-color 0.3s;
+        }
+
+        .container.alarm-active {
+            border-color: #ef4444;
+            animation: pulse-border 0.8s infinite alternate;
+        }
+
+        @keyframes pulse-border {
+            0% { border-color: #ef4444; box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
+            100% { border-color: #b91c1c; box-shadow: 0 0 40px rgba(239, 68, 68, 0.6); }
+        }
+
+        .stage-badge {
+            display: inline-block;
+            background: #334155;
+            padding: 8px 24px;
+            border-radius: 40px;
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #94a3b8;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .stage-title {
+            font-size: 4.5rem;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 10px;
+            color: #f8fafc;
+        }
+
+        .stage-title .highlight {
+            color: #facc15;
+        }
+
+        .timer-display {
+            font-size: 12rem;
+            font-weight: 700;
+            letter-spacing: 4px;
+            font-variant-numeric: tabular-nums;
+            color: #e2e8f0;
+            margin: 20px 0 10px;
+            line-height: 1;
+            font-family: 'SF Mono', 'Menlo', 'Monaco', monospace;
+        }
+
+        .timer-display.warning {
+            color: #facc15;
+        }
+
+        .timer-display.danger {
+            color: #ef4444;
+            animation: blink-text 1s step-end infinite;
+        }
+
+        @keyframes blink-text {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .status-message {
+            font-size: 2rem;
+            font-weight: 500;
+            min-height: 4rem;
+            color: #94a3b8;
+            margin-bottom: 30px;
+            transition: color 0.3s;
+        }
+
+        .status-message.alert {
+            color: #ef4444;
+            font-weight: 700;
+        }
+
+        .btn {
+            background: #3b82f6;
+            border: none;
+            color: #ffffff;
+            font-size: 2.2rem;
+            font-weight: 600;
+            padding: 18px 48px;
+            border-radius: 80px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 8px 0 #1d4ed8;
+            display: inline-block;
+            min-width: 240px;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 0 #1d4ed8;
+        }
+
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #1d4ed8;
+        }
+
+        .btn-success {
+            background: #22c55e;
+            box-shadow: 0 8px 0 #15803d;
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 10px 0 #15803d;
+        }
+
+        .btn-success:active {
+            box-shadow: 0 4px 0 #15803d;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            box-shadow: 0 8px 0 #b91c1c;
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 10px 0 #b91c1c;
+        }
+
+        .btn-danger:active {
+            box-shadow: 0 4px 0 #b91c1c;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #1d4ed8;
+            pointer-events: none;
+        }
+
+        .info-footer {
+            margin-top: 30px;
+            font-size: 1rem;
+            color: #64748b;
+            border-top: 1px solid #334155;
+            padding-top: 20px;
+        }
+
+        .info-footer .label {
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        @media (max-width: 700px) {
+            .container {
+                padding: 30px 20px 25px;
+                border-radius: 40px;
+            }
+            .stage-title {
+                font-size: 2.8rem;
+            }
+            .timer-display {
+                font-size: 7rem;
+            }
+            .btn {
+                font-size: 1.6rem;
+                padding: 14px 30px;
+                min-width: 180px;
+            }
+            .status-message {
+                font-size: 1.4rem;
+                min-height: 3rem;
+            }
+        }
+
+        @media (max-width: 450px) {
+            .stage-title {
+                font-size: 2rem;
+            }
+            .timer-display {
+                font-size: 4.5rem;
+            }
+            .btn {
+                font-size: 1.2rem;
+                padding: 12px 20px;
+                min-width: 140px;
+            }
+            .status-message {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="mainContainer">
+        <div class="stage-badge" id="stageBadge">Etapa 1 de 3</div>
+        <div class="stage-title" id="stageTitle">
+            <span class="highlight">⚡</span> Desarrollo
+        </div>
+        <div class="timer-display" id="timerDisplay">25:00</div>
+        <div class="status-message" id="statusMessage">⏳ Tiempo en curso...</div>
+        <button class="btn" id="actionBtn">⏩ Siguiente</button>
+        <div class="info-footer">
+            <span class="label">🔊 Alarma:</span>
+            <span id="alarmStatus">Desactivada</span>
+            &nbsp;·&nbsp; <span class="label">Tiempo total restante:</span>
+            <span id="globalTimeDisplay">45:00</span>
+            &nbsp;·&nbsp; <span class="label">Tiempo sobrante acumulado:</span>
+            <span id="extraTimeDisplay">+0:00</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // --- Configuración ---
+            const STAGES = [
+                { name: 'Desarrollo', duration: 25 * 60, threshold: 2 * 60, nextLabel: '⏩ Siguiente', isLast: false },
+                { name: 'Ejercicios', duration: 15 * 60, threshold: 2 * 60, nextLabel: '⏩ Siguiente', isLast: false },
+                { name: 'Cierre', duration: 5 * 60, threshold: 1 * 60, nextLabel: '🏁 Finalizar clase', isLast: true }
+            ];
+
+            // --- Estado ---
+            let currentStageIndex = 0;
+            let globalTimeLeft = 45 * 60; // 45 minutos totales
+            let stageTimeLeft = STAGES[0].duration;
+            let extraTimeAccumulated = 0; // tiempo sobrante que se acumula para la siguiente etapa
+            let timerInterval = null;
+            let alarmInterval = null;
+            let isAlarmPlaying = false;
+            let audioCtx = null;
+            let isClassFinished = false;
+
+            // --- DOM ---
+            const container = document.getElementById('mainContainer');
+            const stageBadge = document.getElementById('stageBadge');
+            const stageTitle = document.getElementById('stageTitle');
+            const timerDisplay = document.getElementById('timerDisplay');
+            const statusMessage = document.getElementById('statusMessage');
+            const actionBtn = document.getElementById('actionBtn');
+            const alarmStatus = document.getElementById('alarmStatus');
+            const globalTimeDisplay = document.getElementById('globalTimeDisplay');
+            const extraTimeDisplay = document.getElementById('extraTimeDisplay');
+
+            // --- Audio ---
+            function getAudioContext() {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                return audioCtx;
+            }
+
+            function playBeep() {
+                try {
+                    const ctx = getAudioContext();
+                    if (ctx.state === 'suspended') ctx.resume();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.frequency.value = 880;
+                    osc.type = 'square';
+                    gain.gain.value = 0.25;
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + 0.25);
+                } catch (_) { /* silencio */ }
+            }
+
+            function startAlarmSound() {
+                if (isAlarmPlaying) return;
+                isAlarmPlaying = true;
+                alarmStatus.textContent = '🔊 ACTIVADA (sonando)';
+                alarmStatus.style.color = '#ef4444';
+                container.classList.add('alarm-active');
+                if (alarmInterval) clearInterval(alarmInterval);
+                playBeep();
+                alarmInterval = setInterval(playBeep, 600);
+            }
+
+            function stopAlarmSound() {
+                isAlarmPlaying = false;
+                if (alarmInterval) {
+                    clearInterval(alarmInterval);
+                    alarmInterval = null;
+                }
+                alarmStatus.textContent = 'Desactivada';
+                alarmStatus.style.color = '#64748b';
+                container.classList.remove('alarm-active');
+                updateStatusMessage();
+            }
+
+            // --- Formato ---
+            function formatTime(seconds) {
+                const negative = seconds < 0;
+                const absSec = Math.abs(seconds);
+                const m = Math.floor(absSec / 60);
+                const s = Math.floor(absSec % 60);
+                return (negative ? '-' : '') + `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            }
+
+            function formatExtra(seconds) {
+                if (seconds === 0) return '+0:00';
+                const sign = seconds > 0 ? '+' : '';
+                const absSec = Math.abs(seconds);
+                const m = Math.floor(absSec / 60);
+                const s = Math.floor(absSec % 60);
+                return `${sign}${m}:${s.toString().padStart(2, '0')}`;
+            }
+
+            // --- UI ---
+            function updateTimerDisplay() {
+                timerDisplay.textContent = formatTime(stageTimeLeft);
+                timerDisplay.classList.remove('warning', 'danger');
+                const threshold = STAGES[currentStageIndex].threshold;
+                if (stageTimeLeft <= 30) {
+                    timerDisplay.classList.add('danger');
+                } else if (stageTimeLeft <= threshold) {
+                    timerDisplay.classList.add('warning');
+                }
+                globalTimeDisplay.textContent = formatTime(globalTimeLeft);
+                extraTimeDisplay.textContent = formatExtra(extraTimeAccumulated);
+            }
+
+            function updateStatusMessage() {
+                const stage = STAGES[currentStageIndex];
+                if (isClassFinished) {
+                    statusMessage.textContent = '🎉 ¡Clase finalizada!';
+                    statusMessage.classList.remove('alert');
+                    statusMessage.style.color = '#22c55e';
+                    return;
+                }
+                if (globalTimeLeft <= 0 && stageTimeLeft <= 0) {
+                    statusMessage.textContent = '⏰ ¡Tiempo total agotado!';
+                    statusMessage.classList.add('alert');
+                    return;
+                }
+                if (stageTimeLeft <= stage.threshold) {
+                    statusMessage.textContent = `🔔 ¡Alerta! Menos de ${Math.ceil(stage.threshold / 60)} min. en esta etapa.`;
+                    statusMessage.classList.add('alert');
+                } else {
+                    statusMessage.textContent = '⏳ Tiempo en curso...';
+                    statusMessage.classList.remove('alert');
+                }
+            }
+
+            function updateStageUI() {
+                const stage = STAGES[currentStageIndex];
+                stageBadge.textContent = `Etapa ${currentStageIndex + 1} de ${STAGES.length}`;
+                stageTitle.innerHTML = `<span class="highlight">⚡</span> ${stage.name}`;
+                actionBtn.textContent = stage.nextLabel;
+                actionBtn.className = stage.isLast ? 'btn btn-success' : 'btn';
+                actionBtn.disabled = false;
+                // Calcular tiempo efectivo para la etapa: duración planificada + extra acumulado
+                let effectiveDuration = stage.duration + extraTimeAccumulated;
+                // Si el tiempo efectivo es negativo, se mantiene negativo (ya se excedió el tiempo global)
+                // pero no puede ser menor que globalTimeLeft (si globalTimeLeft es negativo, stageTimeLeft será negativo)
+                stageTimeLeft = Math.min(effectiveDuration, globalTimeLeft);
+                // Resetear extra acumulado (ya se aplicó a esta etapa)
+                extraTimeAccumulated = 0;
+                updateTimerDisplay();
+                updateStatusMessage();
+                stopAlarmSound();
+            }
+
+            // --- Temporizador ---
+            function tickTimer() {
+                if (isClassFinished) return;
+                globalTimeLeft--;
+                stageTimeLeft--;
+                updateTimerDisplay();
+                const stage = STAGES[currentStageIndex];
+                if (stageTimeLeft <= stage.threshold && stageTimeLeft > -999) {
+                    if (!isAlarmPlaying) {
+                        startAlarmSound();
+                    }
+                }
+                updateStatusMessage();
+            }
+
+            function startTimer() {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                timerInterval = setInterval(tickTimer, 1000);
+            }
+
+            // --- Acción del botón ---
+            function handleAction() {
+                stopAlarmSound();
+
+                const stage = STAGES[currentStageIndex];
+
+                // Si es la última etapa, finalizar clase
+                if (stage.isLast) {
+                    isClassFinished = true;
+                    if (timerInterval) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                    }
+                    stopAlarmSound();
+                    statusMessage.textContent = '🎉 ¡Clase finalizada!';
+                    statusMessage.classList.remove('alert');
+                    statusMessage.style.color = '#22c55e';
+                    timerDisplay.textContent = '00:00';
+                    actionBtn.disabled = true;
+                    alarmStatus.textContent = 'Finalizada';
+                    alarmStatus.style.color = '#22c55e';
+                    container.classList.remove('alarm-active');
+                    globalTimeDisplay.textContent = formatTime(globalTimeLeft);
+                    extraTimeDisplay.textContent = '+0:00';
+                    return;
+                }
+
+                // Calcular el tiempo sobrante de la etapa actual (puede ser negativo si se excedió)
+                // stageTimeLeft es el tiempo que queda en la etapa en este momento
+                const sobrante = stageTimeLeft;
+                // Acumular el sobrante para la siguiente etapa
+                extraTimeAccumulated += sobrante;
+
+                // Pasar a la siguiente etapa
+                currentStageIndex++;
+                // Actualizar UI con la nueva etapa y el extra acumulado
+                updateStageUI();
+                // Asegurar que el temporizador esté corriendo
+                if (!timerInterval) {
+                    startTimer();
+                }
+            }
+
+            // --- Inicialización ---
+            function init() {
+                globalTimeLeft = 45 * 60;
+                currentStageIndex = 0;
+                extraTimeAccumulated = 0;
+                isClassFinished = false;
+                updateStageUI();
+                startTimer();
+                actionBtn.addEventListener('click', handleAction);
+                document.addEventListener('click', () => {
+                    if (audioCtx && audioCtx.state === 'suspended') {
+                        audioCtx.resume();
+                    }
+                });
+            }
+
+            init();
+        })();
+    </script>
+
+</body>
+</html>

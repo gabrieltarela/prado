@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5" />
+    <title>Preguntas de Cierre · Dependencias Transitivas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fb;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 920px;
+            background: #ffffff;
+            border-radius: 40px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.08);
+            padding: 40px 36px 44px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: #475569;
+            margin-bottom: 36px;
+            border-bottom: 3px solid #e2e8f0;
+            padding-bottom: 20px;
+        }
+
+        .question-card {
+            background: #f8fafc;
+            border-radius: 30px;
+            padding: 30px 34px;
+            margin-bottom: 30px;
+            border: 2px solid #e2e8f0;
+            transition: box-shadow 0.2s;
+        }
+
+        .question-card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        }
+
+        .question-number {
+            display: inline-block;
+            background: #1e293b;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.2rem;
+            padding: 6px 18px;
+            border-radius: 40px;
+            margin-bottom: 14px;
+            letter-spacing: 0.3px;
+        }
+
+        .question-text {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #0f172a;
+            line-height: 1.4;
+            margin-bottom: 22px;
+        }
+
+        .btn-answer {
+            background: #eff6ff;
+            border: 3px solid #3b82f6;
+            color: #1e4a8a;
+            padding: 14px 32px;
+            border-radius: 60px;
+            font-size: 1.4rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .btn-answer:hover {
+            background: #dbeafe;
+            transform: scale(1.03);
+        }
+
+        .btn-answer:active {
+            transform: scale(0.97);
+        }
+
+        .answer-box {
+            display: none;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 28px 32px;
+            margin-top: 22px;
+            border-left: 8px solid #22c55e;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+            animation: fadeSlide 0.3s ease-out;
+        }
+
+        .answer-box.open {
+            display: block;
+        }
+
+        @keyframes fadeSlide {
+            0% { opacity: 0; transform: translateY(-8px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .answer-box p {
+            font-size: 1.6rem;
+            line-height: 1.6;
+            color: #1e293b;
+        }
+
+        .answer-box strong {
+            color: #0f172a;
+        }
+
+        .answer-box .highlight {
+            background: #fef9e7;
+            padding: 2px 12px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .badge-code {
+            background: #e2e8f0;
+            padding: 4px 16px;
+            border-radius: 30px;
+            font-family: 'SF Mono', 'Menlo', monospace;
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #1e293b;
+            display: inline-block;
+            margin: 0 4px;
+        }
+
+        .footer-note {
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 3px solid #e2e8f0;
+            text-align: center;
+            color: #64748b;
+            font-size: 1.2rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 700px) {
+            .container {
+                padding: 24px 18px 28px;
+                border-radius: 28px;
+            }
+            h1 {
+                font-size: 2.2rem;
+            }
+            .subtitle {
+                font-size: 1.2rem;
+            }
+            .question-card {
+                padding: 22px 20px;
+            }
+            .question-text {
+                font-size: 1.6rem;
+            }
+            .btn-answer {
+                font-size: 1.2rem;
+                padding: 12px 24px;
+            }
+            .answer-box p {
+                font-size: 1.3rem;
+            }
+            .badge-code {
+                font-size: 1rem;
+                padding: 2px 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 18px 12px 22px;
+                border-radius: 24px;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            .subtitle {
+                font-size: 1rem;
+            }
+            .question-card {
+                padding: 16px 14px;
+            }
+            .question-text {
+                font-size: 1.3rem;
+            }
+            .btn-answer {
+                font-size: 1rem;
+                padding: 10px 18px;
+                gap: 8px;
+            }
+            .answer-box p {
+                font-size: 1.1rem;
+            }
+            .answer-box {
+                padding: 16px 18px;
+            }
+            .badge-code {
+                font-size: 0.9rem;
+                padding: 2px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h1>🧠 Preguntas de Cierre</h1>
+    <div class="subtitle">Validación de conceptos clave · Dependencias Transitivas y 3FN</div>
+
+    <!-- ==================== PREGUNTA 1 ==================== -->
+    <div class="question-card">
+        <div class="question-number">Pregunta 1</div>
+        <div class="question-text">
+            ¿En qué se convierte el determinante al crear la tabla nueva y qué rol debe cumplir en la anterior?
+        </div>
+        <button class="btn-answer" onclick="toggleAnswer('answer1')">
+            <span>💡</span> Ver respuesta
+        </button>
+        <div id="answer1" class="answer-box">
+            <p>
+                <strong>El determinante se convierte en <span class="highlight">clave primaria</span> de la nueva tabla.</strong><br /><br />
+                En la tabla original, ese mismo atributo pasa a ser <strong>clave foránea (FK)</strong>, manteniendo así la relación entre ambas tablas. De esta forma, se elimina la redundancia sin perder la conexión entre los datos.
+            </p>
+        </div>
+    </div>
+
+    <!-- ==================== PREGUNTA 2 ==================== -->
+    <div class="question-card">
+        <div class="question-number">Pregunta 2</div>
+        <div class="question-text">
+            ¿Por qué es vital distinguir atributos primos de no primos en la 3FN?
+        </div>
+        <button class="btn-answer" onclick="toggleAnswer('answer2')">
+            <span>💡</span> Ver respuesta
+        </button>
+        <div id="answer2" class="answer-box">
+            <p>
+                <strong>Porque la definición de dependencia transitiva se aplica exclusivamente a atributos <span class="highlight">no primos</span>.</strong><br /><br />
+                La 3FN exige que <strong>ningún atributo no primo</strong> dependa transitivamente de otro atributo no primo (o de un conjunto que no sea clave). Si no distinguimos entre primos y no primos, podríamos confundir dependencias que involucran partes de la clave (dependencias parciales) con dependencias transitivas, y no podríamos aplicar correctamente la normalización.
+            </p>
+        </div>
+    </div>
+
+    <!-- ==================== PREGUNTA 3 ==================== -->
+    <div class="question-card">
+        <div class="question-number">Pregunta 3</div>
+        <div class="question-text">
+            ¿Se puede evaluar la 3FN si la tabla no cumple con la 2FN?
+        </div>
+        <button class="btn-answer" onclick="toggleAnswer('answer3')">
+            <span>💡</span> Ver respuesta
+        </button>
+        <div id="answer3" class="answer-box">
+            <p>
+                <strong>No, la 3FN se evalúa <span class="highlight">después</span> de haber alcanzado la 2FN.</strong><br /><br />
+                La normalización es un proceso secuencial: <br />
+                <span class="badge-code">1FN</span> → <span class="badge-code">2FN</span> → <span class="badge-code">3FN</span>.<br /><br />
+                Si una tabla tiene dependencias parciales (viola 2FN), primero deben eliminarse. Recién entonces se pueden identificar y eliminar las dependencias transitivas propias de la 3FN. Evaluar la 3FN sobre una tabla que no cumple 2FN puede llevar a conclusiones incorrectas porque las dependencias parciales enmascaran el verdadero estado de los datos.
+            </p>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        ✅ Estas preguntas ayudan a consolidar los conceptos de dependencia transitiva, claves primarias y foráneas, y el proceso de normalización hacia la 3FN.
+    </div>
+
+</div>
+
+<script>
+    function toggleAnswer(id) {
+        const box = document.getElementById(id);
+        if (!box) return;
+        box.classList.toggle('open');
+        const btn = box.parentElement.querySelector('.btn-answer');
+        if (btn) {
+            if (box.classList.contains('open')) {
+                btn.innerHTML = '<span>🙈</span> Ocultar respuesta';
+            } else {
+                btn.innerHTML = '<span>💡</span> Ver respuesta';
+            }
+        }
+    }
+</script>
+
+</body>
+</html>

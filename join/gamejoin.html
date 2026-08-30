@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador Didáctico de SQL JOINs</title>
+  <style>
+    :root {
+      --blue-bg: #e3f2fd;
+      --blue-border: #1565c0;
+      --blue-text: #0d47a1;
+      --green-bg: #e8f5e9;
+      --green-border: #2e7d32;
+      --green-text: #1b5e20;
+      --null-bg: #f5f5f5;
+      --null-border: #616161;
+      --null-text: #424242;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #f4f6f9;
+      color: #333;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    header {
+      background-color: #ffffff;
+      padding: 15px 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 15px;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      color: #2c3e50;
+      margin-bottom: 8px;
+    }
+
+    .challenge-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-challenge {
+      padding: 8px 14px;
+      border: 2px solid #cbd5e1;
+      background: #f8fafc;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-challenge.active {
+      background-color: #2563eb;
+      color: white;
+      border-color: #1d4ed8;
+    }
+
+    .instruction-box {
+      background-color: #fffbeb;
+      border-left: 4px solid #f59e0b;
+      padding: 10px 15px;
+      border-radius: 4px;
+      font-size: 0.95rem;
+    }
+
+    /* Layout Principal */
+    .app-container {
+      display: grid;
+      grid-template-columns: 280px 1fr 280px;
+      gap: 15px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .panel {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .panel-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #edf2f7;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .cards-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 50px;
+      flex-shrink: 0;
+    }
+
+    #green-pool {
+      margin-bottom: 15px;
+    }
+
+    .null-pool-section {
+      margin-top: 0;
+      padding-top: 15px;
+      border-top: 2px dashed #cbd5e1;
+      flex-shrink: 0;
+    }
+
+    /* Estilo de Tarjetas */
+    .card {
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: grab;
+      user-select: none;
+      border: 2px solid;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .card:active {
+      cursor: grabbing;
+      transform: scale(0.98);
+    }
+
+    .card.blue {
+      background-color: var(--blue-bg);
+      border-color: var(--blue-border);
+      color: var(--blue-text);
+    }
+
+    .card.green {
+      background-color: var(--green-bg);
+      border-color: var(--green-border);
+      color: var(--green-text);
+    }
+
+    .card.null {
+      background-color: var(--null-bg);
+      border-color: var(--null-border);
+      color: var(--null-text);
+      text-align: center;
+      font-style: italic;
+    }
+
+    /* Panel Central */
+    .workspace-actions {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+
+    .btn-action {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-add { background: #e2e8f0; color: #1e293b; }
+    .btn-check { background: #16a34a; color: white; }
+    .btn-reset { background: #ef4444; color: white; }
+
+    .assembly-table {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+
+    .assembly-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f8fafc;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px dashed #cbd5e1;
+    }
+
+    .row-number {
+      font-weight: bold;
+      color: #94a3b8;
+      width: 24px;
+      text-align: center;
+    }
+
+    .drop-slot {
+      flex: 1;
+      height: 48px;
+      border: 2px dashed #94a3b8;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      transition: background 0.2s;
+    }
+
+    .drop-slot.drag-over {
+      background: #f1f5f9;
+      border-color: #2563eb;
+    }
+
+    .drop-slot .card {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-remove-row {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+
+    .btn-remove-row:hover { color: #ef4444; }
+
+    #feedback {
+      margin-top: 10px;
+      margin-bottom: 10px;
+      padding: 10px 15px;
+      border-radius: 6px;
+      font-weight: 600;
+      display: none;
+    }
+
+    #feedback.success { background: #dcfce7; color: #15803d; border: 1px solid #86efac; display: block; }
+    #feedback.error { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; display: block; }
+
+    /* Adaptación Responsive para Móviles y Tablets */
+    @media (max-width: 900px) {
+      body {
+        height: auto;
+        min-height: 100vh;
+        padding: 10px;
+      }
+
+      .app-container {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+
+      .panel {
+        max-height: 450px;
+      }
+
+      .assembly-row {
+        gap: 6px;
+        padding: 6px;
+      }
+
+      .drop-slot {
+        height: 42px;
+      }
+      
+      .card {
+        font-size: 0.82rem;
+        padding: 6px 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Laboratorio Interactivo: Construcción de SQL JOINs</h1>
+    <div class="challenge-bar">
+      <button class="btn-challenge active" onclick="loadChallenge(1)">Desafío 1: INNER JOIN</button>
+      <button class="btn-challenge" onclick="loadChallenge(2)">Desafío 2: LEFT JOIN</button>
+      <button class="btn-challenge" onclick="loadChallenge(3)">Desafío 3: RIGHT JOIN</button>
+      <button class="btn-challenge" onclick="loadChallenge(4)">Desafío 4: FULL JOIN</button>
+    </div>
+    <div class="instruction-box" id="instruction">
+      Cargando desafío...
+    </div>
+  </header>
+
+  <div class="app-container">
+    
+    <div class="panel">
+      <div class="panel-title">
+        <span>Tabla ESTUDIANTES</span>
+        <span style="color:#1565c0; font-size: 0.8rem;">(Izquierda)</span>
+      </div>
+      <div class="cards-container" id="blue-pool" ondragover="allowDrop(event)" ondrop="dropToPool(event, 'blue')"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">
+        <span>Mesa de Ensamblado (Resultado)</span>
+        <div>
+          <button class="btn-action btn-add" onclick="addRow()">+ Fila</button>
+          <button class="btn-action btn-check" onclick="validateResult()">Comprobar</button>
+          <button class="btn-action btn-reset" onclick="resetCurrentChallenge()">Reiniciar</button>
+        </div>
+      </div>
+      
+      <div id="feedback"></div>
+
+      <div class="assembly-table" id="assembly-table"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">
+        <span>Tabla INSCRIPCIONES</span>
+        <span style="color:#2e7d32; font-size: 0.8rem;">(Derecha)</span>
+      </div>
+      <div class="cards-container" id="green-pool" ondragover="allowDrop(event)" ondrop="dropToPool(event, 'green')"></div>
+
+      <div class="null-pool-section">
+        <div class="panel-title" style="border:none; margin-bottom:8px;">Fichas Auxiliares</div>
+        <div class="cards-container" id="null-pool" ondragover="allowDrop(event)" ondrop="dropToPool(event, 'null')"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const studentsData = [
+      { id: 's1', studentId: 1, text: 'ID: 1 | Ana', type: 'blue' },
+      { id: 's2', studentId: 2, text: 'ID: 2 | Bruno', type: 'blue' },
+      { id: 's3', studentId: 3, text: 'ID: 3 | Carla', type: 'blue' },
+      { id: 's4', studentId: 4, text: 'ID: 4 | Diego', type: 'blue' },
+      { id: 's5', studentId: 5, text: 'ID: 5 | Elena', type: 'blue' }
+    ];
+
+    const enrollmentsData = [
+      { id: 'i1', studentId: 1, text: 'ID: 1 | SQL', type: 'green' },
+      { id: 'i2', studentId: 1, text: 'ID: 1 | Redes', type: 'green' },
+      { id: 'i3', studentId: 2, text: 'ID: 2 | Java', type: 'green' },
+      { id: 'i4', studentId: 99, text: 'ID: 99 | Python', type: 'green' }
+    ];
+
+    const challenges = {
+      1: {
+        title: "Desafío 1: INNER JOIN",
+        instruction: "La Dirección pide: 'Lista exacta de alumnos que cursan materias'. Arma únicamente las parejas que coinciden en ambas tablas. Deja fuera los registros sin correspondencia.",
+        expectedRows: 3,
+        validate: (rows) => {
+          if (rows.length !== 3) return false;
+          const validPairs = [
+            { left: 1, right: 1 },
+            { left: 1, right: 1 },
+            { left: 2, right: 2 }
+          ];
+          return checkMatch(rows, validPairs);
+        }
+      },
+      2: {
+        title: "Desafío 2: LEFT JOIN",
+        instruction: "Adscripción exige: 'Lista de TODOS los estudiantes matriculados'. Incluye a todos los alumnos azules. Si no cursan nada, asígnales una tarjeta NULL a la derecha.",
+        expectedRows: 6,
+        validate: (rows) => {
+          if (rows.length !== 6) return false;
+          const validPairs = [
+            { left: 1, right: 1 }, { left: 1, right: 1 }, { left: 2, right: 2 },
+            { left: 3, right: null }, { left: 4, right: null }, { left: 5, right: null }
+          ];
+          return checkMatch(rows, validPairs);
+        }
+      },
+      3: {
+        title: "Desafío 3: RIGHT JOIN",
+        instruction: "Coordinación solicita: 'Reporte de TODAS las materias registradas'. Conserva todas las tarjetas verdes. Si alguna no tiene alumno válido, coloca NULL a la izquierda.",
+        expectedRows: 4,
+        validate: (rows) => {
+          if (rows.length !== 4) return false;
+          const validPairs = [
+            { left: 1, right: 1 }, { left: 1, right: 1 }, { left: 2, right: 2 },
+            { left: null, right: 99 }
+          ];
+          return checkMatch(rows, validPairs);
+        }
+      },
+      4: {
+        title: "Desafío 4: FULL JOIN",
+        instruction: "Inspección General exige: 'Informe global sin pérdidas'. Muestra todos los estudiantes y todas las materias. Usa NULL en los huecos faltantes de ambos lados.",
+        expectedRows: 7,
+        validate: (rows) => {
+          if (rows.length !== 7) return false;
+          const validPairs = [
+            { left: 1, right: 1 }, { left: 1, right: 1 }, { left: 2, right: 2 },
+            { left: 3, right: null }, { left: 4, right: null }, { left: 5, right: null },
+            { left: null, right: 99 }
+          ];
+          return checkMatch(rows, validPairs);
+        }
+      }
+    };
+
+    let currentChallengeId = 1;
+
+    window.onload = () => {
+      loadChallenge(1);
+    };
+
+    function loadChallenge(id) {
+      currentChallengeId = id;
+      document.querySelectorAll('.btn-challenge').forEach((btn, idx) => {
+        btn.classList.toggle('active', idx + 1 === id);
+      });
+
+      const ch = challenges[id];
+      document.getElementById('instruction').innerHTML = `<strong>${ch.title}:</strong> ${ch.instruction}`;
+      document.getElementById('feedback').className = '';
+      document.getElementById('feedback').style.display = 'none';
+
+      resetCurrentChallenge();
+    }
+
+    function resetCurrentChallenge() {
+      document.getElementById('blue-pool').innerHTML = '';
+      document.getElementById('green-pool').innerHTML = '';
+      document.getElementById('null-pool').innerHTML = '';
+      document.getElementById('assembly-table').innerHTML = '';
+      document.getElementById('feedback').style.display = 'none';
+
+      studentsData.forEach(s => {
+        document.getElementById('blue-pool').appendChild(createCardElement(s.id, s.text, 'blue', s.studentId));
+      });
+
+      enrollmentsData.forEach(i => {
+        document.getElementById('green-pool').appendChild(createCardElement(i.id, i.text, 'green', i.studentId));
+      });
+
+      const nullCard = createCardElement('null-template', 'NULL', 'null', null);
+      document.getElementById('null-pool').appendChild(nullCard);
+
+      const targetRows = challenges[currentChallengeId].expectedRows;
+      for (let r = 0; r < targetRows; r++) {
+        addRow();
+      }
+    }
+
+    function createCardElement(id, text, type, studentId = null) {
+      const card = document.createElement('div');
+      card.className = `card ${type}`;
+      card.id = id;
+      card.innerText = text;
+      card.draggable = true;
+      card.dataset.type = type;
+      if (studentId !== null) card.dataset.studentId = studentId;
+
+      card.ondragstart = (e) => {
+        e.dataTransfer.setData('text/plain', card.id);
+      };
+
+      return card;
+    }
+
+    function addRow() {
+      const table = document.getElementById('assembly-table');
+      const rowIdx = table.children.length + 1;
+
+      const row = document.createElement('div');
+      row.className = 'assembly-row';
+      row.innerHTML = `
+        <div class="row-number">${rowIdx}</div>
+        <div class="drop-slot left-slot" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)" ondrop="dropToSlot(event, 'left')"></div>
+        <div class="drop-slot right-slot" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)" ondrop="dropToSlot(event, 'right')"></div>
+        <button class="btn-remove-row" onclick="removeRow(this)">✕</button>
+      `;
+
+      table.appendChild(row);
+      updateRowNumbers();
+    }
+
+    function removeRow(btn) {
+      btn.parentElement.remove();
+      updateRowNumbers();
+    }
+
+    function updateRowNumbers() {
+      const rows = document.querySelectorAll('.assembly-row');
+      rows.forEach((row, idx) => {
+        row.querySelector('.row-number').innerText = idx + 1;
+      });
+    }
+
+    function allowDrop(e) {
+      e.preventDefault();
+      if (e.currentTarget.classList.contains('drop-slot')) {
+        e.currentTarget.classList.add('drag-over');
+      }
+    }
+
+    function leaveDrop(e) {
+      if (e.currentTarget.classList.contains('drop-slot')) {
+        e.currentTarget.classList.remove('drag-over');
+      }
+    }
+
+    function dropToSlot(e, slotSide) {
+      e.preventDefault();
+      const slot = e.currentTarget;
+      slot.classList.remove('drag-over');
+
+      const cardId = e.dataTransfer.getData('text/plain');
+      const originCard = document.getElementById(cardId);
+      if (!originCard) return;
+
+      const cardType = originCard.dataset.type;
+
+      if (slotSide === 'left' && cardType === 'green') {
+        showFeedback("No puedes colocar una tarjeta verde (Inscripción) en la columna izquierda.", "error");
+        return;
+      }
+      if (slotSide === 'right' && cardType === 'blue') {
+        showFeedback("No puedes colocar una tarjeta azul (Estudiante) en la columna derecha.", "error");
+        return;
+      }
+
+      let cardToPlace = originCard;
+      const isFromPool = originCard.parentElement.classList.contains('cards-container');
+
+      if (isFromPool) {
+        cardToPlace = originCard.cloneNode(true);
+        cardToPlace.id = `${originCard.id}_clone_${Date.now()}_${Math.floor(Math.random()*1000)}`;
+        cardToPlace.ondragstart = (event) => {
+          event.dataTransfer.setData('text/plain', cardToPlace.id);
+        };
+      }
+
+      if (slot.children.length > 0) {
+        returnCardToPool(slot.children[0]);
+      }
+
+      slot.appendChild(cardToPlace);
+    }
+
+    function dropToPool(e, poolType) {
+      e.preventDefault();
+      const cardId = e.dataTransfer.getData('text/plain');
+      const card = document.getElementById(cardId);
+      if (!card) return;
+
+      returnCardToPool(card);
+    }
+
+    function returnCardToPool(card) {
+      if (card.id.includes('_clone_')) {
+        card.remove();
+      }
+    }
+
+    function validateResult() {
+      const rows = document.querySelectorAll('.assembly-row');
+      const assembledData = [];
+
+      let incompleteRow = false;
+
+      rows.forEach(row => {
+        const leftSlot = row.querySelector('.left-slot');
+        const rightSlot = row.querySelector('.right-slot');
+
+        const leftCard = leftSlot.children[0];
+        const rightCard = rightSlot.children[0];
+
+        if (!leftCard || !rightCard) {
+          incompleteRow = true;
+          return;
+        }
+
+        assembledData.push({
+          left: leftCard.dataset.type === 'null' ? null : parseInt(leftCard.dataset.studentId),
+          right: rightCard.dataset.type === 'null' ? null : parseInt(rightCard.dataset.studentId)
+        });
+      });
+
+      if (incompleteRow) {
+        showFeedback("Tienes filas incompletas en la mesa. Asegúrate de colocar ambas tarjetas o usar NULL.", "error");
+        return;
+      }
+
+      const isCorrect = challenges[currentChallengeId].validate(assembledData);
+
+      if (isCorrect) {
+        showFeedback("¡CORRECTO! Has construido el resultado exacto de la consulta.", "success");
+      } else {
+        showFeedback("El resultado no es correcto para este desafío. Revisa la cantidad de filas y los NULL.", "error");
+      }
+    }
+
+    function checkMatch(assembled, expectedPairs) {
+      if (assembled.length !== expectedPairs.length) return false;
+
+      const matchedIndices = new Set();
+
+      for (let item of assembled) {
+        let found = false;
+        for (let i = 0; i < expectedPairs.length; i++) {
+          if (matchedIndices.has(i)) continue;
+          const exp = expectedPairs[i];
+
+          if (item.left === exp.left && item.right === exp.right) {
+            matchedIndices.add(i);
+            found = true;
+            break;
+          }
+        }
+        if (!found) return false;
+      }
+
+      return matchedIndices.size === expectedPairs.length;
+    }
+
+    function showFeedback(msg, type) {
+      const fb = document.getElementById('feedback');
+      fb.innerText = msg;
+      fb.className = type;
+      fb.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

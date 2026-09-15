@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Escape Room SQL: El Servidor del Instituto</title>
+  <style>
+    :root {
+      --bg-main: #0f172a;
+      --bg-card: #1e293b;
+      --bg-input: #020617;
+      --primary: #10b981;
+      --primary-hover: #059669;
+      --accent: #3b82f6;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --font-mono: 'Fira Code', 'Consolas', 'Courier New', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background-color: #020617;
+      border-bottom: 2px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .status-badge {
+      background-color: rgba(239, 68, 68, 0.2);
+      color: var(--danger);
+      border: 1px solid var(--danger);
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      animation: pulse 2s infinite;
+    }
+
+    .status-badge.restored {
+      background-color: rgba(16, 185, 129, 0.2);
+      color: var(--primary);
+      border-color: var(--primary);
+      animation: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .progress-container {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .progress-bar-bg {
+      width: 180px;
+      height: 12px;
+      background-color: var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      width: 0%;
+      height: 100%;
+      background-color: var(--primary);
+      transition: width 0.4s ease;
+    }
+
+    .main-layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      flex: 1;
+      gap: 1.5rem;
+      padding: 1.5rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    @media (max-width: 900px) {
+      .main-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .panel {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+    }
+
+    .panel-title {
+      font-size: 1rem;
+      font-weight: bold;
+      color: var(--accent);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+    }
+
+    /* Tabla de Base de Datos */
+    .db-table-wrapper {
+      overflow-x: auto;
+    }
+
+    .db-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      font-family: var(--font-mono);
+    }
+
+    .db-table th, .db-table td {
+      border: 1px solid var(--border);
+      padding: 0.5rem;
+      text-align: center;
+    }
+
+    .db-table th {
+      background-color: #0f172a;
+      color: var(--accent);
+    }
+
+    .db-table tr:nth-child(even) {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .db-table tr.filtered-out {
+      opacity: 0.3;
+      background-color: rgba(239, 68, 68, 0.1);
+    }
+
+    .db-table tr.highlight {
+      background-color: rgba(16, 185, 129, 0.2);
+    }
+
+    .null-tag {
+      background-color: rgba(245, 158, 11, 0.2);
+      color: var(--warning);
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+
+    /* Guía de Equivalencias */
+    .cheat-sheet {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+    }
+
+    .cheat-row {
+      display: flex;
+      justify-content: space-between;
+      background: #0f172a;
+      padding: 0.4rem 0.6rem;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+    }
+
+    .cheat-autómata { color: var(--warning); }
+    .cheat-sql { color: var(--primary); font-weight: bold; }
+
+    /* Contenido de las Salas */
+    .room-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .room-header {
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 1rem;
+    }
+
+    .room-title {
+      font-size: 1.4rem;
+      color: var(--primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .room-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .task-box {
+      background-color: #0f172a;
+      border-left: 4px solid var(--accent);
+      padding: 1rem;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    input[type="text"], input[type="number"], select {
+      background-color: var(--bg-input);
+      border: 1px solid var(--border);
+      color: #38bdf8;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      width: 100%;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+
+    .btn {
+      background-color: var(--primary);
+      color: #020617;
+      font-weight: bold;
+      padding: 0.85rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background-color: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .btn-secondary:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+    }
+
+    .feedback-msg {
+      padding: 1rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      display: none;
+      line-height: 1.5;
+    }
+
+    .feedback-msg.error {
+      display: block;
+      background-color: rgba(239, 68, 68, 0.15);
+      border: 1px solid var(--danger);
+      color: #fca5a5;
+    }
+
+    .feedback-msg.success {
+      display: block;
+      background-color: rgba(16, 185, 129, 0.15);
+      border: 1px solid var(--primary);
+      color: #6ee7b7;
+    }
+
+    .hint-box {
+      background-color: rgba(245, 158, 11, 0.1);
+      border: 1px solid var(--warning);
+      color: #fde047;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      display: none;
+    }
+
+    .actions-row {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .hidden { display: none !important; }
+
+    /* Pantalla Final de Victoria */
+    .victory-box {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 2rem 1rem;
+    }
+
+    .victory-title {
+      font-size: 2rem;
+      color: var(--primary);
+    }
+
+    .concept-summary {
+      text-align: left;
+      background: #0f172a;
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      width: 100%;
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+
+    .concept-summary h4 {
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    .concept-summary ul {
+      margin-left: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-area">
+      <span style="font-size: 1.5rem;">🔒</span>
+      <div>
+        <h1 style="font-size: 1.1rem; color: var(--text);">ESCAPE ROOM: El Servidor del Instituto</h1>
+        <p style="font-size: 0.8rem; color: var(--text-muted);">Sistema de Base de Datos - UTU/INET</p>
+      </div>
+    </div>
+    <div class="progress-container">
+      <span id="status-badge" class="status-badge">SERVIDOR BLOQUEADO</span>
+      <div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 2px;">Restauración: <span id="progress-text">0%</span></div>
+        <div class="progress-bar-bg">
+          <div id="progress-bar-fill" class="progress-bar-fill"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    
+    <!-- PANEL LATERAL: Datos + Referencia -->
+    <aside class="sidebar">
+      <!-- Tabla Estudiantes -->
+      <div class="panel">
+        <div class="panel-title">
+          <span>📊</span> Tabla: Estudiantes
+        </div>
+        <div class="db-table-wrapper">
+          <table class="db-table" id="db-table">
+            <thead>
+              <tr>
+                <th>id</th>
+                <th>nombre</th>
+                <th>edad</th>
+                <th>nota_promedio</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-id="1" data-edad="16" data-nota="9.0">
+                <td>1</td><td>Sofia</td><td>16</td><td>9.0</td>
+              </tr>
+              <tr data-id="2" data-edad="15" data-nota="8.0">
+                <td>2</td><td>Mateo</td><td>15</td><td>8.0</td>
+              </tr>
+              <tr data-id="3" data-edad="17" data-nota="null">
+                <td>3</td><td>Camila</td><td>17</td><td><span class="null-tag">NULL</span></td>
+              </tr>
+              <tr data-id="4" data-edad="16" data-nota="5.0">
+                <td>4</td><td>Lucas</td><td>16</td><td>5.0</td>
+              </tr>
+              <tr data-id="5" data-edad="18" data-nota="9.0">
+                <td>5</td><td>Valentina</td><td>18</td><td>9.0</td>
+              </tr>
+              <tr data-id="6" data-edad="14" data-nota="null">
+                <td>6</td><td>Joaquín</td><td>14</td><td><span class="null-tag">NULL</span></td>
+              </tr>
+              <tr data-id="7" data-edad="16" data-nota="10.0">
+                <td>7</td><td>Isabella</td><td>16</td><td>10.0</td>
+              </tr>
+              <tr data-id="8" data-edad="18" data-nota="7.0">
+                <td>8</td><td>Bruno</td><td>18</td><td>7.0</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Guía Rápida Autómata vs SQL -->
+      <div class="panel">
+        <div class="panel-title">
+          <span>🤖</span> Lenguaje Autómata vs MySQL
+        </div>
+        <div class="cheat-sheet">
+          <div class="cheat-row"><span class="cheat-autómata">CONTAME *</span><span class="cheat-sql">COUNT(*)</span></div>
+          <div class="cheat-row"><span class="cheat-autómata">CONTAME col</span><span class="cheat-sql">COUNT(col)</span></div>
+          <div class="cheat-row"><span class="cheat-autómata">SUMAME</span><span class="cheat-sql">SUM()</span></div>
+          <div class="cheat-row"><span class="cheat-autómata">PROMEDIAME</span><span class="cheat-sql">AVG()</span></div>
+          <div class="cheat-row"><span class="cheat-autómata">MAYOR</span><span class="cheat-sql">MAX()</span></div>
+          <div class="cheat-row"><span class="cheat-autómata">MENOR</span><span class="cheat-sql">MIN()</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ÁREA PRINCIPAL DE SALAS -->
+    <main class="content">
+
+      <!-- PANTALLA DE INICIO -->
+      <div id="room-intro" class="room-card">
+        <div class="room-header">
+          <h2 class="room-title">⚠️ ¡ALERTA DE SEGURIDAD DEL SERVIDOR!</h2>
+          <p class="room-desc">El sistema central de la Dirección ha entrado en modo de bloqueo de emergencia tras una falla en las consultas de reporte general.</p>
+        </div>
+        <div class="task-box">
+          <p><strong>Tu misión:</strong> Como estudiante del curso, debes calibrar los algoritmos de consulta resolviendo <strong>4 salas de desafíos</strong>. Para desbloquear cada terminal, deberás aplicar correctamente las funciones de agregación en SQL y comprender cómo resumen conjuntos de datos.</p>
+        </div>
+        <div>
+          <button class="btn" onclick="startEscapeRoom()">🚀 Iniciar Restauración del Servidor</button>
+        </div>
+      </div>
+
+      <!-- SALA 1 -->
+      <div id="room-1" class="room-card hidden">
+        <div class="room-header">
+          <h2 class="room-title">Sala 1: El Dilema del Conteo (COUNT vs COUNT)</h2>
+          <p class="room-desc">La Dirección necesita saber cuántos registros hay en la base de datos y cuántos tienen nota ingresada.</p>
+        </div>
+
+        <div class="task-box">
+          <p><strong>Pregunta 1.1:</strong> ¿Cuántas <strong>tuplas/filas</strong> existen en total en la tabla <code>Estudiantes</code> independientemente de si sus celdas tienen valores <code>NULL</code>?</p>
+        </div>
+        <div class="form-group">
+          <label for="r1-q1-num">Número total de tuplas:</label>
+          <input type="number" id="r1-q1-num" placeholder="Ej: 5">
+        </div>
+
+        <div class="task-box">
+          <p><strong>Pregunta 1.2:</strong> ¿Qué función de agregación SQL responde a la pregunta de cuántas tuplas/filas existen en total en la entidad?</p>
+        </div>
+        <div class="form-group">
+          <label for="r1-q2-sql">Sintaxis SQL exacta:</label>
+          <select id="r1-q2-sql">
+            <option value="">-- Selecciona una opción --</option>
+            <option value="COUNT(*)">COUNT(*)</option>
+            <option value="COUNT(nota_promedio)">COUNT(nota_promedio)</option>
+            <option value="SUM(*)">SUM(*)</option>
+          </select>
+        </div>
+
+        <div class="task-box">
+          <p><strong>Pregunta 1.3:</strong> ¿Cuál es el resultado numérico de ejecutar <code>SELECT COUNT(nota_promedio) FROM Estudiantes;</code>? (Recuerda qué pasa con los <code>NULL</code>).</p>
+        </div>
+        <div class="form-group">
+          <label for="r1-q3-num">Cantidad de notas válidas:</label>
+          <input type="number" id="r1-q3-num" placeholder="Ej: 5">
+        </div>
+
+        <div id="r1-feedback" class="feedback-msg"></div>
+        <div id="r1-hint" class="hint-box">💡 <strong>Pista:</strong> <code>COUNT(*)</code> cuenta la existencia de filas (incluyendo NULLs). <code>COUNT(atributo)</code> evalúa solo registros con información válida ingresada ignorando NULLs.</div>
+
+        <div class="actions-row">
+          <button class="btn" onclick="validateRoom1()">Verificar Terminal 1</button>
+          <button class="btn btn-secondary" onclick="toggleHint('r1-hint')">💡 Pista</button>
+        </div>
+      </div>
+
+      <!-- SALA 2 -->
+      <div id="room-2" class="room-card hidden">
+        <div class="room-header">
+          <h2 class="room-title">Sala 2: Condensación Vertical (PROMEDIAME / AVG)</h2>
+          <p class="room-desc">Adscripción requiere saber el promedio general de calificaciones de todo el turno.</p>
+        </div>
+
+        <div class="task-box">
+          <p><strong>Desafío:</strong> Escribe la consulta SQL para obtener el promedio general de la columna <code>nota_promedio</code> de la tabla <code>Estudiantes</code> y calcula cuál es su resultado exacto.</p>
+          <p style="margin-top:0.5rem; font-size: 0.85rem; color: var(--text-muted);"><em>Notas válidas: 9.0 + 8.0 + 5.0 + 9.0 + 10.0 + 7.0 = 48.0 dividido entre las notas válidas.</em></p>
+        </div>
+
+        <div class="form-group">
+          <label for="r2-sql">Consulta SQL Formal:</label>
+          <input type="text" id="r2-sql" placeholder="SELECT ... FROM Estudiantes;">
+        </div>
+
+        <div class="form-group">
+          <label for="r2-val">Resultado numérico del promedio general:</label>
+          <input type="number" step="0.1" id="r2-val" placeholder="Ej: 7.5">
+        </div>
+
+        <div id="r2-feedback" class="feedback-msg"></div>
+        <div id="r2-hint" class="hint-box">💡 <strong>Pista:</strong> Usa la función <code>AVG(columna)</code>. Recuerda que ignora las 2 celdas con <code>NULL</code>, por lo que divide la suma acumulada (48) solo entre las 6 notas válidas.</div>
+
+        <div class="actions-row">
+          <button class="btn" onclick="validateRoom2()">Verificar Terminal 2</button>
+          <button class="btn btn-secondary" onclick="toggleHint('r2-hint')">💡 Pista</button>
+        </div>
+      </div>
+
+      <!-- SALA 3 -->
+      <div id="room-3" class="room-card hidden">
+        <div class="room-header">
+          <h2 class="room-title">Sala 3: Filtros de Extremos (MAYOR y MENOR)</h2>
+          <p class="room-desc">Para otorgar reconocimientos y brindar apoyos tutorados, el sistema necesita detectar los valores máximos y mínimos.</p>
+        </div>
+
+        <div class="task-box">
+          <p><strong>Pregunta 3.1:</strong> ¿Cuál es la nota más alta (máxima) registrada en la tabla y qué función SQL la obtiene?</p>
+        </div>
+        <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+            <label for="r3-max-val">Nota Máxima (Número):</label>
+            <input type="number" id="r3-max-val" placeholder="Ej: 10">
+          </div>
+          <div>
+            <label for="r3-max-func">Función SQL:</label>
+            <select id="r3-max-func">
+              <option value="">-- Selección --</option>
+              <option value="MAX">MAX()</option>
+              <option value="MAYOR">MAYOR()</option>
+              <option value="TOP">TOP()</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="task-box">
+          <p><strong>Pregunta 3.2:</strong> ¿Cuál es la edad mínima (más joven) entre todos los estudiantes de la tabla?</p>
+        </div>
+        <div class="form-group">
+          <label for="r3-min-age">Edad Mínima:</label>
+          <input type="number" id="r3-min-age" placeholder="Ej: 12">
+        </div>
+
+        <div id="r3-feedback" class="feedback-msg"></div>
+        <div id="r3-hint" class="hint-box">💡 <strong>Pista:</strong> En SQL traducimos <code>MAYOR</code> como <code>MAX()</code> y <code>MENOR</code> como <code>MIN()</code>. Observa las columnas <code>nota_promedio</code> y <code>edad</code>.</div>
+
+        <div class="actions-row">
+          <button class="btn" onclick="validateRoom3()">Verificar Terminal 3</button>
+          <button class="btn btn-secondary" onclick="toggleHint('r3-hint')">💡 Pista</button>
+        </div>
+      </div>
+
+      <!-- SALA 4 -->
+      <div id="room-4" class="room-card hidden">
+        <div class="room-header">
+          <h2 class="room-title">Sala 4: La Gran Consulta Combinada (SELECT + Agregación + WHERE)</h2>
+          <p class="room-desc">¡Último nivel de seguridad! Debes combinar el filtrado horizontal de filas con la agregación vertical.</p>
+        </div>
+
+        <div class="task-box">
+          <p><strong>Requerimiento del Director:</strong> <em>"Necesito calcular el promedio de notas (<code>AVG(nota_promedio)</code>) ÚNICAMENTE de aquellos estudiantes cuya edad sea estrictamente mayor a 15 años (<code>edad > 15</code>)."</em></p>
+        </div>
+
+        <div class="form-group">
+          <label for="r4-sql">Escribe la sentencia SQL completa formalizada:</label>
+          <input type="text" id="r4-sql" placeholder="SELECT ... FROM Estudiantes WHERE ...">
+        </div>
+
+        <div class="form-group">
+          <label for="r4-result">¿Cuál es el resultado numérico exacto de esa consulta?</label>
+          <p style="font-size: 0.8rem; color: var(--text-muted);">Sugerencia: Haz clic en el botón de abajo para previsualizar visualmente qué filas filtrará el <code>WHERE</code> en la tabla lateral.</p>
+          <input type="number" step="0.1" id="r4-result" placeholder="Ej: 8.0">
+        </div>
+
+        <div id="r4-feedback" class="feedback-msg"></div>
+        <div id="r4-hint" class="hint-box">💡 <strong>Pista:</strong> La estructura es: <code>SELECT AVG(nota_promedio) FROM Estudiantes WHERE edad > 15;</code>. Los estudiantes mayores a 15 son Sofía(16), Camila(17, NULL), Lucas(16), Valentina(18), Isabella(16) y Bruno(18). Las notas válidas son (9 + 5 + 9 + 10 + 7) = 40 entre 5 alumnos = 8.0.</div>
+
+        <div class="actions-row">
+          <button class="btn btn-secondary" onclick="highlightFilterWhere()">👁️ Simular Filtro WHERE en Tabla</button>
+          <button class="btn" onclick="validateRoom4()">🔓 Desbloquear Servidor Final</button>
+          <button class="btn btn-secondary" onclick="toggleHint('r4-hint')">💡 Pista</button>
+        </div>
+      </div>
+
+      <!-- PANTALLA DE VICTORIA -->
+      <div id="room-victory" class="room-card victory-box hidden">
+        <div style="font-size: 4rem;">🎉 System Restored!</div>
+        <h2 class="victory-title">¡SERVIDOR DESBLOQUEADO CON ÉXITO!</h2>
+        <p style="color: var(--text-muted); max-width: 600px;">Has completado todas las verificaciones de seguridad demostrando un dominio sólido en las funciones de agregación SQL.</p>
+
+        <div class="concept-summary">
+          <h4>📌 Síntesis Metacognitiva de Aprendizajes:</h4>
+          <ul>
+            <li><strong>Filtrado Horizontal (WHERE):</strong> Selecciona y recorta qué filas o tuplas individuales cumplen una condición antes de procesar.</li>
+            <li><strong>Resumen Vertical (COUNT, SUM, AVG, MAX, MIN):</strong> Condensa múltiples valores de una columna entera en un único resultado representativo.</li>
+            <li><strong>Tratamiento de NULL:</strong> <code>COUNT(*)</code> evalúa la existencia de la fila completa. En cambio, <code>SUM</code>, <code>AVG</code>, <code>MAX</code> y <code>MIN</code> operan sobre un atributo específico e ignoran las celdas con valores <code>NULL</code>.</li>
+          </ul>
+        </div>
+
+        <button class="btn" onclick="location.reload()">🔄 Jugar Nuevamente</button>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    // Estado del juego
+    let currentRoom = 0;
+
+    function updateProgress(percent) {
+      document.getElementById('progress-bar-fill').style.width = percent + '%';
+      document.getElementById('progress-text').innerText = percent + '%';
+      if(percent === 100) {
+        const badge = document.getElementById('status-badge');
+        badge.innerText = "SERVIDOR RESTAURADO";
+        badge.classList.add('restored');
+      }
+    }
+
+    function startEscapeRoom() {
+      document.getElementById('room-intro').classList.add('hidden');
+      document.getElementById('room-1').classList.remove('hidden');
+      updateProgress(25);
+    }
+
+    function toggleHint(hintId) {
+      const hint = document.getElementById(hintId);
+      hint.style.display = hint.style.display === 'block' ? 'none' : 'block';
+    }
+
+    // Validación Sala 1
+    function validateRoom1() {
+      const q1 = parseInt(document.getElementById('r1-q1-num').value);
+      const q2 = document.getElementById('r1-q2-sql').value;
+      const q3 = parseInt(document.getElementById('r1-q3-num').value);
+      const feedback = document.getElementById('r1-feedback');
+
+      if (q1 === 8 && q2 === 'COUNT(*)' && q3 === 6) {
+        feedback.className = "feedback-msg success";
+        feedback.innerHTML = "<strong>¡Excelente!</strong> La tabla tiene 8 tuplas en total (COUNT*=8). Al contar notas válidas con COUNT(nota_promedio), los 2 valores NULL son ignorados, dando como resultado 6.";
+        setTimeout(() => {
+          document.getElementById('room-1').classList.add('hidden');
+          document.getElementById('room-2').classList.remove('hidden');
+          updateProgress(50);
+        }, 2200);
+      } else {
+        feedback.className = "feedback-msg error";
+        feedback.innerHTML = "<strong>Acceso denegado:</strong> Revisa tus respuestas.<br>- ¿Cuántas filas hay en total en la tabla? (Suma con NULLs y todo)<br>- Recuerda que COUNT(columna) ignora los registros vacíos (NULL).";
+      }
+    }
+
+    // Validación Sala 2
+    function validateRoom2() {
+      const sqlInput = document.getElementById('r2-sql').value.toUpperCase().trim();
+      const valInput = parseFloat(document.getElementById('r2-val').value);
+      const feedback = document.getElementById('r2-feedback');
+
+      const isSqlValid = sqlInput.includes('AVG') && sqlInput.includes('NOTA_PROMEDIO') && sqlInput.includes('ESTUDIANTES');
+      const isValValid = (valInput === 8 || valInput === 8.0);
+
+      if (isSqlValid && isValValid) {
+        feedback.className = "feedback-msg success";
+        feedback.innerHTML = "<strong>¡Correcto!</strong> La consulta <code>SELECT AVG(nota_promedio) FROM Estudiantes;</code> suma las 6 notas válidas (48.0) y divide entre 6, resultando en <strong>8.0</strong>.";
+        setTimeout(() => {
+          document.getElementById('room-2').classList.add('hidden');
+          document.getElementById('room-3').classList.remove('hidden');
+          updateProgress(75);
+        }, 2200);
+      } else {
+        feedback.className = "feedback-msg error";
+        feedback.innerHTML = "<strong>Error en la consulta o cálculo:</strong><br>- La función para promediar en SQL es <code>AVG(columna)</code>.<br>- Recuerda dividir la suma total de notas (48) entre las 6 notas válidas (ignora los NULL). 48 / 6 = 8.0.";
+      }
+    }
+
+    // Validación Sala 3
+    function validateRoom3() {
+      const maxVal = parseFloat(document.getElementById('r3-max-val').value);
+      const maxFunc = document.getElementById('r3-max-func').value;
+      const minAge = parseInt(document.getElementById('r3-min-age').value);
+      const feedback = document.getElementById('r3-feedback');
+
+      if (maxVal === 10 && maxFunc === 'MAX' && minAge === 14) {
+        feedback.className = "feedback-msg success";
+        feedback.innerHTML = "<strong>¡Perfecto!</strong> MAX(nota_promedio) devuelve 10 y la edad mínima (MIN) presente en la entidad es 14 años.";
+        setTimeout(() => {
+          document.getElementById('room-3').classList.add('hidden');
+          document.getElementById('room-4').classList.remove('hidden');
+          updateProgress(90);
+        }, 2200);
+      } else {
+        feedback.className = "feedback-msg error";
+        feedback.innerHTML = "<strong>Datos incorrectos:</strong> Revisa la tabla de la izquierda para hallar la nota más alta y la edad del estudiante más joven.";
+      }
+    }
+
+    // Simular Filtro WHERE en Tabla
+    function highlightFilterWhere() {
+      const rows = document.querySelectorAll('#db-table tbody tr');
+      rows.forEach(row => {
+        const edad = parseInt(row.getAttribute('data-edad'));
+        if (edad > 15) {
+          row.classList.remove('filtered-out');
+          row.classList.add('highlight');
+        } else {
+          row.classList.add('filtered-out');
+          row.classList.remove('highlight');
+        }
+      });
+    }
+
+    // Validación Sala 4
+    function validateRoom4() {
+      const sql = document.getElementById('r4-sql').value.toUpperCase().trim();
+      const val = parseFloat(document.getElementById('r4-result').value);
+      const feedback = document.getElementById('r4-feedback');
+
+      const hasSelectAvg = sql.includes('SELECT') && sql.includes('AVG') && sql.includes('NOTA_PROMEDIO');
+      const hasFrom = sql.includes('FROM') && sql.includes('ESTUDIANTES');
+      const hasWhere = sql.includes('WHERE') && sql.includes('EDAD') && (sql.includes('> 15') || sql.includes('>15'));
+
+      const isResultValid = (val === 8 || val === 8.0);
+
+      if (hasSelectAvg && hasFrom && hasWhere && isResultValid) {
+        feedback.className = "feedback-msg success";
+        feedback.innerHTML = "<strong>¡CONSULTA CORRECTA Y SERVIDOR DESBLOQUEADO!</strong> El filtrado WHERE redujo el grupo a los mayores de 15 años, y luego AVG computó el promedio de sus notas válidas (40 / 5 = 8.0).";
+        setTimeout(() => {
+          document.getElementById('room-4').classList.add('hidden');
+          document.getElementById('room-victory').classList.remove('hidden');
+          updateProgress(100);
+        }, 2200);
+      } else {
+        feedback.className = "feedback-msg error";
+        feedback.innerHTML = "<strong>Sintaxis o resultado incorrecto:</strong><br>- Estructura esperada: <code>SELECT AVG(nota_promedio) FROM Estudiantes WHERE edad > 15;</code><br>- Al filtrar mayores de 15 años quedan: Sofía (9), Camila (NULL), Lucas (5), Valentina (9), Isabella (10) y Bruno (7). Sus notas suman 40 entre 5 alumnos válidos = 8.0.";
+      }
+    }
+  </script>
+</body>
+</html>

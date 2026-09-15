@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Autómata Procesador · Simulador de Tabla</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#10141a;
+    --surface:#1b232c;
+    --surface-2:#222c37;
+    --line:#34424f;
+    --text:#e7e2d3;
+    --text-dim:#93a0ac;
+    --copper:#ce7b4c;
+    --teal:#4fa99a;
+    --teal-dim:#28453f;
+    --amber:#f2b84b;
+    --good:#7fbf7f;
+    --good-dim:#1c3a22;
+    --bad:#e1746b;
+    --bad-dim:#3a1e1c;
+    --radius:6px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:radial-gradient(ellipse at top, #171f27 0%, var(--bg) 55%);
+    color:var(--text);
+    font-family:'IBM Plex Mono',monospace;
+    min-height:100vh;
+    padding:20px 16px 60px;
+  }
+  h1,h2,h3,.ui-font{font-family:'Space Grotesk',sans-serif;}
+  .wrap{max-width:920px;margin:0 auto;}
+
+  header{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    border-bottom:2px solid var(--line);padding-bottom:14px;margin-bottom:20px;
+    flex-wrap:wrap;gap:10px;
+  }
+  header .title{display:flex;flex-direction:column;gap:2px;}
+  header .title small{color:var(--teal);letter-spacing:.02em;font-size:.78rem;}
+  header h1{font-size:1.5rem;margin:0;font-weight:700;}
+  .score{
+    font-family:'Space Grotesk',sans-serif;font-weight:600;
+    background:var(--surface-2);border:1px solid var(--line);
+    border-radius:var(--radius);padding:8px 14px;display:flex;gap:16px;font-size:.92rem;
+  }
+  .score span.n{color:var(--amber);font-weight:700;}
+
+  .challenge{
+    background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--copper);
+    border-radius:var(--radius);padding:16px 18px;margin-bottom:16px;
+  }
+  .challenge .eyebrow{color:var(--text-dim);font-family:'Space Grotesk',sans-serif;font-size:.8rem;margin-bottom:6px;}
+  .challenge p{margin:0 0 10px;font-size:.95rem;line-height:1.5;color:var(--text-dim);}
+  .sql-box{
+    background:#0c1216;border:1px solid var(--line);border-radius:var(--radius);
+    padding:12px 16px;font-size:1rem;line-height:1.6;overflow-x:auto;
+  }
+  .kw{color:var(--teal);font-weight:600;}
+  .fn{color:var(--copper);font-weight:700;}
+  .col{color:var(--amber);}
+  .str{color:var(--good);}
+
+  .instructions{
+    display:flex;gap:10px;align-items:flex-start;
+    background:var(--surface-2);border:1px dashed var(--line);border-radius:var(--radius);
+    padding:12px 14px;margin-bottom:16px;font-size:.86rem;color:var(--text-dim);
+  }
+  .instructions .badge{
+    flex-shrink:0;width:26px;height:26px;border-radius:50%;
+    background:var(--teal-dim);color:var(--teal);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Space Grotesk',sans-serif;
+  }
+
+  .terminal{
+    background:#0c1216;border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px;margin-bottom:16px;overflow-x:auto;
+  }
+  .terminal h2{font-size:.85rem;color:var(--text-dim);margin:0 0 4px;font-weight:600;}
+  .terminal .subhint{font-size:.78rem;color:var(--text-dim);opacity:.8;margin:0 0 10px;}
+  table{border-collapse:collapse;width:100%;font-size:.84rem;min-width:560px;}
+  th,td{padding:8px 10px;text-align:left;border-bottom:1px solid #1c2830;}
+  th{color:var(--text-dim);font-family:'Space Grotesk',sans-serif;font-weight:600;border-bottom:1px solid var(--line);}
+  tbody tr{cursor:pointer;color:var(--amber);transition:background .12s, outline .12s;}
+  tbody tr:hover{background:#161f26;}
+  tbody tr.marked{background:#2a3a2c;outline:2px solid var(--good);outline-offset:-2px;}
+  td.null-val{color:#5a4a2c;font-style:italic;}
+  tbody tr.correct-in{outline:2px solid var(--good);background:#1c3320;}
+  tbody tr.correct-out{background:transparent;}
+  tbody tr.wrong-in{outline:2px solid var(--bad);background:#3a2020;}
+  tbody tr.missed{outline:2px dashed var(--amber);background:#332b16;}
+
+  .answer-row{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;
+    padding-top:14px;border-top:1px dashed var(--line);
+  }
+  .answer-row label{font-family:'Space Grotesk',sans-serif;font-size:.88rem;color:var(--text-dim);}
+  .answer-row input{
+    background:var(--surface-2);border:1px solid var(--line);color:var(--text);
+    border-radius:var(--radius);padding:8px 12px;font-family:'IBM Plex Mono',monospace;
+    font-size:1rem;width:120px;
+  }
+  .answer-row input:focus{outline:none;border-color:var(--amber);}
+
+  .bench-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+  button{
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:.9rem;
+    border:none;border-radius:var(--radius);padding:10px 18px;cursor:pointer;
+    transition:transform .1s, filter .15s;
+  }
+  button:active{transform:translateY(1px);}
+  .btn-run{background:var(--amber);color:#241a05;}
+  .btn-run:hover{filter:brightness(1.08);}
+  .btn-reset{background:transparent;color:var(--text-dim);border:1px solid var(--line);}
+  .btn-reset:hover{color:var(--text);border-color:var(--text-dim);}
+  .btn-next{background:var(--teal);color:#08211d;display:none;}
+  .btn-next:hover{filter:brightness(1.1);}
+
+  .feedback{border-radius:var(--radius);padding:14px 16px;font-size:.92rem;line-height:1.6;display:none;margin-top:16px;}
+  .feedback.ok{background:var(--good-dim);border:1px solid var(--good);color:#c9edc9;display:block;}
+  .feedback.err{background:var(--bad-dim);border:1px solid var(--bad);color:#f5c9c5;display:block;}
+  .feedback ul{margin:6px 0 0;padding-left:20px;}
+
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.76rem;color:var(--text-dim);margin-top:10px;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .legend i{width:12px;height:12px;border-radius:3px;display:inline-block;}
+
+  .final{text-align:center;padding:40px 20px;display:none;}
+  .final h2{font-size:1.6rem;margin-bottom:6px;}
+  .final p{color:var(--text-dim);margin-bottom:18px;}
+
+  @media (max-width:600px){
+    header{flex-direction:column;align-items:flex-start;}
+    .sql-box{font-size:.86rem;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="title">
+      <small>PANEL DEL AUTÓMATA</small>
+      <h1>El Autómata Procesador</h1>
+    </div>
+    <div class="score ui-font">
+      <div>Desafío <span class="n" id="challengeNum">1</span>/<span id="challengeTotal">7</span></div>
+      <div>Puntaje <span class="n" id="scoreNum">0</span></div>
+    </div>
+  </header>
+
+  <div id="game">
+    <div class="challenge">
+      <div class="eyebrow ui-font">Consulta formalizada</div>
+      <div class="sql-box" id="sqlBox"></div>
+    </div>
+
+    <div class="instructions">
+      <span class="badge">i</span>
+      <span>Sos el <strong>Autómata procesador</strong>: leé la consulta, hacé click en las filas de la tabla que cumplen la condición (si no hay WHERE, participan todas), escribí el resultado numérico y validá.</span>
+    </div>
+
+    <div class="terminal">
+      <h2 class="ui-font">Tabla Estudiantes</h2>
+      <p class="subhint">Click en una fila para marcarla / desmarcarla como incluida.</p>
+      <table>
+        <thead>
+          <tr><th>id</th><th>nombre</th><th>edad</th><th>curso</th><th>nota_promedio</th><th>cuotas_pagadas</th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+
+      <div class="answer-row">
+        <label for="answerInput">Resultado calculado:</label>
+        <input type="number" step="0.01" id="answerInput" placeholder="—">
+      </div>
+
+      <div class="legend" id="legend" style="display:none;">
+        <span><i style="background:var(--good-dim);outline:2px solid var(--good);"></i> fila bien marcada</span>
+        <span><i style="background:var(--bad-dim);outline:2px solid var(--bad);"></i> marcada de más</span>
+        <span><i style="background:#332b16;outline:2px dashed var(--amber);"></i> te faltó marcar</span>
+      </div>
+    </div>
+
+    <div class="bench-actions">
+      <button class="btn-run" id="runBtn">▶ Validar resultado</button>
+      <button class="btn-reset" id="resetBtn">Vaciar marcas</button>
+      <button class="btn-next" id="nextBtn">Siguiente desafío →</button>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <div class="final" id="finalScreen">
+    <h2 class="ui-font">Turno de autómata completado</h2>
+    <p id="finalText"></p>
+    <button class="btn-run" id="restartBtn">Volver a empezar</button>
+  </div>
+
+</div>
+
+<script>
+/* ---------- datos de la tabla Estudiantes ---------- */
+const rows = [
+  {id:1, nombre:"Anaclara Fernández", edad:16, curso:"6to A", nota_promedio:7.5, cuotas_pagadas:10},
+  {id:2, nombre:"Bruno Silva",        edad:15, curso:"6to A", nota_promedio:null, cuotas_pagadas:8},
+  {id:3, nombre:"Camila Duarte",      edad:17, curso:"6to B", nota_promedio:5.8, cuotas_pagadas:12},
+  {id:4, nombre:"Diego Ramírez",      edad:16, curso:"6to A", nota_promedio:8.2, cuotas_pagadas:10},
+  {id:5, nombre:"Emilia Castro",      edad:15, curso:"6to B", nota_promedio:null, cuotas_pagadas:6},
+  {id:6, nombre:"Franco Pereyra",     edad:16, curso:"6to A", nota_promedio:6.1, cuotas_pagadas:11},
+  {id:7, nombre:"Gimena López",       edad:17, curso:"6to B", nota_promedio:9.0, cuotas_pagadas:12},
+  {id:8, nombre:"Hernán Souza",       edad:15, curso:"6to A", nota_promedio:4.5, cuotas_pagadas:7},
+  {id:9, nombre:"Ivana Correa",       edad:16, curso:"6to B", nota_promedio:7.0, cuotas_pagadas:10},
+  {id:10,nombre:"Joaquín Bentancur",  edad:17, curso:"6to A", nota_promedio:null, cuotas_pagadas:9},
+];
+
+/* ---------- desafíos ---------- */
+/* cond: null (sin WHERE) o {col, op, val} — op puede ser '>', '>=', '=='  */
+const challenges = [
+  {
+    sql:`SELECT <span class="fn">COUNT</span>(<span class="col">*</span>) <span class="kw">AS</span> total <span class="kw">FROM</span> Estudiantes;`,
+    func:"COUNT", arg:"*", cond:null,
+    note:"Sin WHERE, todas las filas participan. COUNT(*) cuenta filas como entidades completas."
+  },
+  {
+    sql:`SELECT <span class="fn">AVG</span>(<span class="col">nota_promedio</span>) <span class="kw">AS</span> promedio_general <span class="kw">FROM</span> Estudiantes;`,
+    func:"AVG", arg:"nota_promedio", cond:null,
+    note:"Aunque todas las filas participan (no hay WHERE), AVG ignora los NULL de nota_promedio al calcular."
+  },
+  {
+    sql:`SELECT <span class="fn">MAX</span>(<span class="col">nota_promedio</span>) <span class="kw">AS</span> mayor_nota <span class="kw">FROM</span> Estudiantes <span class="kw">WHERE</span> <span class="col">edad</span> &gt; 15;`,
+    func:"MAX", arg:"nota_promedio", cond:{col:"edad", op:">", val:15},
+    note:"WHERE filtra por edad antes de calcular; dentro de ese subconjunto, MAX ignora los NULL."
+  },
+  {
+    sql:`SELECT <span class="fn">COUNT</span>(<span class="col">*</span>) <span class="kw">AS</span> aprobados <span class="kw">FROM</span> Estudiantes <span class="kw">WHERE</span> <span class="col">nota_promedio</span> &gt;= 6;`,
+    func:"COUNT", arg:"*", cond:{col:"nota_promedio", op:">=", val:6},
+    note:"Los NULL nunca cumplen una comparación como >= 6, por eso quedan afuera del filtro."
+  },
+  {
+    sql:`SELECT <span class="fn">MIN</span>(<span class="col">edad</span>) <span class="kw">AS</span> edad_minima <span class="kw">FROM</span> Estudiantes <span class="kw">WHERE</span> <span class="col">edad</span> &gt; 15;`,
+    func:"MIN", arg:"edad", cond:{col:"edad", op:">", val:15},
+    note:"Mismo filtro que la consulta anterior; ahora se busca el valor mínimo de edad en ese subconjunto."
+  },
+  {
+    sql:`SELECT <span class="fn">COUNT</span>(<span class="col">nota_promedio</span>) <span class="kw">AS</span> con_nota <span class="kw">FROM</span> Estudiantes;`,
+    func:"COUNT", arg:"nota_promedio", cond:null,
+    note:"Sin WHERE, se marcan las 10 filas — pero COUNT(nota_promedio) solo cuenta las que tienen valor cargado."
+  },
+  {
+    sql:`SELECT <span class="fn">SUM</span>(<span class="col">cuotas_pagadas</span>) <span class="kw">AS</span> total_cuotas <span class="kw">FROM</span> Estudiantes <span class="kw">WHERE</span> <span class="col">curso</span> = <span class="str">'6to A'</span>;`,
+    func:"SUM", arg:"cuotas_pagadas", cond:{col:"curso", op:"==", val:"6to A"},
+    note:"WHERE también filtra por columnas de texto, no solo numéricas."
+  },
+];
+
+/* ---------- estado ---------- */
+let current = 0;
+let score = 0;
+let markedIds = new Set();
+let solved = false;
+
+const el = id => document.getElementById(id);
+el("challengeTotal").textContent = challenges.length;
+
+function passesCond(r, cond){
+  if(!cond) return true;
+  if(cond.op===">") return r[cond.col] !== null && r[cond.col] > cond.val;
+  if(cond.op===">=") return r[cond.col] !== null && r[cond.col] >= cond.val;
+  if(cond.op==="==") return r[cond.col] === cond.val;
+  return false;
+}
+function includedIds(cond){
+  return new Set(rows.filter(r=>passesCond(r,cond)).map(r=>r.id));
+}
+function computeResult(func, arg, cond){
+  const filtered = rows.filter(r=>passesCond(r,cond));
+  if(func==="COUNT" && arg==="*") return filtered.length;
+  const vals = filtered.map(r=>r[arg]).filter(v=>v!==null && v!==undefined);
+  if(func==="COUNT") return vals.length;
+  if(vals.length===0) return null;
+  const round = n => Math.round(n*100)/100;
+  if(func==="SUM") return round(vals.reduce((a,b)=>a+b,0));
+  if(func==="AVG") return round(vals.reduce((a,b)=>a+b,0)/vals.length);
+  if(func==="MAX") return round(Math.max(...vals));
+  if(func==="MIN") return round(Math.min(...vals));
+  return null;
+}
+
+function renderTable(){
+  const tbody = el("tbody");
+  tbody.innerHTML = "";
+  rows.forEach(r=>{
+    const tr = document.createElement("tr");
+    tr.dataset.id = r.id;
+    if(markedIds.has(r.id)) tr.classList.add("marked");
+    tr.innerHTML = `<td>${r.id}</td><td>${r.nombre}</td><td>${r.edad}</td><td>${r.curso}</td>
+      <td class="${r.nota_promedio===null?'null-val':''}">${r.nota_promedio===null?'NULL':r.nota_promedio}</td>
+      <td>${r.cuotas_pagadas}</td>`;
+    tr.onclick = ()=>{
+      if(solved) return;
+      if(markedIds.has(r.id)) markedIds.delete(r.id); else markedIds.add(r.id);
+      tr.classList.toggle("marked");
+    };
+    tbody.appendChild(tr);
+  });
+}
+
+function loadChallenge(i){
+  solved = false;
+  markedIds = new Set();
+  el("answerInput").value = "";
+  el("answerInput").disabled = false;
+  el("legend").style.display = "none";
+  el("feedback").className = "feedback";
+  el("feedback").textContent = "";
+  el("nextBtn").style.display = "none";
+  el("challengeNum").textContent = i+1;
+  el("sqlBox").innerHTML = challenges[i].sql;
+  renderTable();
+}
+
+el("resetBtn").onclick = ()=>{
+  if(solved) return;
+  markedIds = new Set();
+  renderTable();
+};
+
+el("runBtn").onclick = ()=>{
+  const ch = challenges[current];
+  const answerRaw = el("answerInput").value.trim();
+  if(answerRaw===""){
+    showFeedback(false, "Escribí el resultado numérico antes de validar.");
+    return;
+  }
+  const correctIds = includedIds(ch.cond);
+  const expected = computeResult(ch.func, ch.arg, ch.cond);
+  const given = parseFloat(answerRaw);
+
+  el("legend").style.display = "flex";
+  document.querySelectorAll("#tbody tr").forEach(tr=>{
+    const id = parseInt(tr.dataset.id);
+    tr.classList.remove("marked","correct-in","wrong-in","missed");
+    const shouldBeIn = correctIds.has(id);
+    const isMarked = markedIds.has(id);
+    if(shouldBeIn && isMarked) tr.classList.add("correct-in");
+    else if(!shouldBeIn && isMarked) tr.classList.add("wrong-in");
+    else if(shouldBeIn && !isMarked) tr.classList.add("missed");
+  });
+
+  const marksOk = setsEqual(markedIds, correctIds);
+  const numOk = expected !== null && Math.abs(given - expected) < 0.05;
+
+  if(marksOk && numOk){
+    score++;
+    el("scoreNum").textContent = score;
+    solved = true;
+    el("answerInput").disabled = true;
+    showFeedback(true, `Correcto. ${ch.note}`);
+    el("nextBtn").style.display = "inline-block";
+  } else {
+    let msg = "";
+    if(!marksOk) msg += "El filtrado de filas no coincide con la condición WHERE de la consulta. ";
+    if(!numOk) msg += "El resultado numérico no es el que produce esa consulta sobre las filas correctas. ";
+    msg += ch.note;
+    showFeedback(false, msg);
+  }
+};
+
+function setsEqual(a,b){
+  if(a.size !== b.size) return false;
+  for(const v of a) if(!b.has(v)) return false;
+  return true;
+}
+
+function showFeedback(ok, msg){
+  const f = el("feedback");
+  f.className = "feedback " + (ok ? "ok" : "err");
+  f.textContent = (ok ? "✓ " : "✕ ") + msg;
+  setTimeout(()=> f.scrollIntoView({behavior:"smooth", block:"center"}), 50);
+}
+
+el("nextBtn").onclick = ()=>{
+  current++;
+  if(current >= challenges.length){
+    document.getElementById("game").style.display = "none";
+    document.getElementById("finalScreen").style.display = "block";
+    document.getElementById("finalText").textContent =
+      `Procesaste correctamente ${score} de ${challenges.length} consultas en tu primer intento.`;
+    return;
+  }
+  loadChallenge(current);
+};
+
+el("restartBtn").onclick = ()=>{
+  current = 0; score = 0;
+  el("scoreNum").textContent = 0;
+  document.getElementById("finalScreen").style.display = "none";
+  document.getElementById("game").style.display = "block";
+  loadChallenge(0);
+};
+
+loadChallenge(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Autómata · Constructor de Consultas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#10141a;
+    --surface:#1b232c;
+    --surface-2:#222c37;
+    --surface-3:#2a3542;
+    --line:#34424f;
+    --text:#e7e2d3;
+    --text-dim:#93a0ac;
+    --copper:#ce7b4c;
+    --copper-dim:#6b4530;
+    --teal:#4fa99a;
+    --teal-dim:#28453f;
+    --amber:#f2b84b;
+    --good:#7fbf7f;
+    --bad:#e1746b;
+    --radius:6px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at top, #171f27 0%, var(--bg) 55%);
+    color:var(--text);
+    font-family:'IBM Plex Mono',monospace;
+    min-height:100vh;
+    padding:20px 16px 60px;
+  }
+  h1,h2,h3,.ui-font{font-family:'Space Grotesk',sans-serif;}
+  .wrap{max-width:920px;margin:0 auto;}
+
+  /* header */
+  header{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    border-bottom:2px solid var(--line);
+    padding-bottom:14px;margin-bottom:20px;
+    flex-wrap:wrap;gap:10px;
+  }
+  header .title{display:flex;flex-direction:column;gap:2px;}
+  header .title small{
+    color:var(--teal);letter-spacing:.02em;font-size:.78rem;
+  }
+  header h1{font-size:1.5rem;margin:0;font-weight:700;}
+  .score{
+    font-family:'Space Grotesk',sans-serif;font-weight:600;
+    background:var(--surface-2);border:1px solid var(--line);
+    border-radius:var(--radius);padding:8px 14px;
+    display:flex;gap:16px;font-size:.92rem;
+  }
+  .score span.n{color:var(--amber);font-weight:700;}
+
+  /* challenge card */
+  .challenge{
+    background:var(--surface);border:1px solid var(--line);
+    border-left:4px solid var(--copper);
+    border-radius:var(--radius);padding:16px 18px;margin-bottom:18px;
+  }
+  .challenge .eyebrow{
+    color:var(--text-dim);font-family:'Space Grotesk',sans-serif;
+    font-size:.8rem;margin-bottom:6px;
+  }
+  .challenge p{margin:0;font-size:1.02rem;line-height:1.5;}
+
+  /* query bench */
+  .bench-panel{
+    background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius);padding:18px;margin-bottom:18px;
+  }
+  .bench-panel h2{font-size:.9rem;margin:0 0 12px;color:var(--text-dim);font-weight:600;}
+  .bench{
+    display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+    font-size:1.05rem;padding:14px;
+    background:var(--surface-2);border-radius:var(--radius);
+    border:1px dashed var(--line);
+  }
+  .fixed-piece{
+    color:var(--teal);font-weight:600;padding:6px 4px;
+  }
+  .slot{
+    min-width:64px;min-height:34px;
+    border:2px dashed var(--line);
+    border-radius:var(--radius);
+    display:flex;align-items:center;justify-content:center;
+    padding:2px 10px;cursor:pointer;
+    transition:border-color .15s, background .15s;
+    background:var(--surface);
+  }
+  .slot.hover{border-color:var(--amber);}
+  .slot.filled{border-style:solid;cursor:pointer;}
+  .slot[data-kind="func"].filled{border-color:var(--copper);background:var(--copper-dim);}
+  .slot[data-kind="arg"].filled{border-color:var(--amber);background:#4a3a1c;}
+  .slot[data-kind="cond"].filled{border-color:var(--teal);background:var(--teal-dim);}
+  .slot .hint{color:var(--text-dim);font-size:.85rem;}
+  .paren{color:var(--text-dim);font-weight:600;}
+
+  .where-row{
+    display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap;
+  }
+  .toggle{
+    display:flex;align-items:center;gap:8px;cursor:pointer;
+    font-family:'Space Grotesk',sans-serif;font-size:.88rem;color:var(--text-dim);
+    user-select:none;
+  }
+  .toggle input{width:16px;height:16px;accent-color:var(--teal);cursor:pointer;}
+  .where-row .fixed-piece{color:var(--teal);}
+
+  .bench-actions{
+    display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;
+  }
+  button{
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:.9rem;
+    border:none;border-radius:var(--radius);padding:10px 18px;
+    cursor:pointer;transition:transform .1s, filter .15s;
+  }
+  button:active{transform:translateY(1px);}
+  .btn-run{background:var(--amber);color:#241a05;}
+  .btn-run:hover{filter:brightness(1.08);}
+  .btn-reset{background:transparent;color:var(--text-dim);border:1px solid var(--line);}
+  .btn-reset:hover{color:var(--text);border-color:var(--text-dim);}
+  .btn-next{background:var(--teal);color:#08211d;display:none;}
+  .btn-next:hover{filter:brightness(1.1);}
+
+  /* tray */
+  .tray{margin-bottom:18px;}
+  .tray-group{margin-bottom:14px;}
+  .tray-group h3{
+    font-size:.78rem;color:var(--text-dim);margin:0 0 8px;
+    font-weight:600;text-transform:none;
+  }
+  .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{
+    font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:.9rem;
+    padding:8px 14px;border-radius:var(--radius);
+    border:1px solid var(--line);background:var(--surface-2);
+    cursor:grab;user-select:none;color:var(--text);
+    transition:border-color .15s, transform .1s;
+    display:flex;flex-direction:column;align-items:center;line-height:1.2;
+  }
+  .chip small{color:var(--text-dim);font-size:.68rem;font-weight:500;font-family:'Space Grotesk',sans-serif;}
+  .chip:hover{border-color:var(--text-dim);}
+  .chip.selected{border-color:var(--amber);box-shadow:0 0 0 2px rgba(242,184,75,.25);}
+  .chip.func{border-left:3px solid var(--copper);}
+  .chip.arg{border-left:3px solid var(--amber);}
+  .chip.cond{border-left:3px solid var(--teal);}
+  .chip.used{opacity:.35;cursor:default;}
+
+  /* terminal / data table */
+  .terminal{
+    background:#0c1216;border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px;margin-bottom:18px;overflow-x:auto;
+  }
+  .terminal h2{font-size:.85rem;color:var(--text-dim);margin:0 0 10px;font-weight:600;}
+  table{border-collapse:collapse;width:100%;font-size:.82rem;min-width:560px;}
+  th,td{padding:6px 10px;text-align:left;border-bottom:1px solid #1c2830;color:var(--amber);}
+  th{color:var(--text-dim);font-family:'Space Grotesk',sans-serif;font-weight:600;border-bottom:1px solid var(--line);}
+  tr.excluded td{color:#3d4a52;}
+  tr.included td{color:var(--amber);}
+  td.null-val{color:#5a4a2c;font-style:italic;}
+  .result-line{
+    margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);
+    font-size:1rem;color:var(--text);
+  }
+  .result-line .val{color:var(--amber);font-weight:700;font-size:1.15rem;}
+
+  /* feedback */
+  .feedback{
+    border-radius:var(--radius);padding:14px 16px;font-size:.95rem;
+    line-height:1.5;display:none;
+  }
+  .feedback.ok{background:#16311e;border:1px solid var(--good);color:#c9edc9;display:block;}
+  .feedback.err{background:#391c1c;border:1px solid var(--bad);color:#f5c9c5;display:block;}
+
+  .final{
+    text-align:center;padding:40px 20px;display:none;
+  }
+  .final h2{font-size:1.6rem;margin-bottom:6px;}
+  .final p{color:var(--text-dim);margin-bottom:18px;}
+
+  @media (max-width:600px){
+    header{flex-direction:column;align-items:flex-start;}
+    .bench{font-size:.92rem;}
+    .slot{min-width:52px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="title">
+      <small>PANEL DEL AUTÓMATA</small>
+      <h1>Constructor de Consultas</h1>
+    </div>
+    <div class="score ui-font">
+      <div>Desafío <span class="n" id="challengeNum">1</span>/<span id="challengeTotal">7</span></div>
+      <div>Puntaje <span class="n" id="scoreNum">0</span></div>
+    </div>
+  </header>
+
+  <div id="game">
+    <div class="challenge">
+      <div class="eyebrow ui-font">Situación planteada</div>
+      <p id="challengeText"></p>
+    </div>
+
+    <div class="bench-panel">
+      <h2 class="ui-font">Banco de consulta — armá la orden para el autómata</h2>
+      <div class="bench" id="bench">
+        <span class="fixed-piece">SELECT</span>
+        <div class="slot" data-kind="func" id="slotFunc"><span class="hint">función</span></div>
+        <span class="paren">(</span>
+        <div class="slot" data-kind="arg" id="slotArg"><span class="hint">argumento</span></div>
+        <span class="paren">)</span>
+        <span class="fixed-piece">FROM Estudiantes</span>
+      </div>
+      <div class="where-row" id="whereRow">
+        <label class="toggle">
+          <input type="checkbox" id="whereToggle">
+          agregar condición WHERE
+        </label>
+        <span class="fixed-piece" id="whereKeyword" style="display:none;">WHERE</span>
+        <div class="slot" data-kind="cond" id="slotCond" style="display:none;"><span class="hint">condición</span></div>
+      </div>
+      <div class="bench-actions">
+        <button class="btn-run" id="runBtn">▶ Ejecutar</button>
+        <button class="btn-reset" id="resetBtn">Vaciar piezas</button>
+        <button class="btn-next" id="nextBtn">Siguiente desafío →</button>
+      </div>
+    </div>
+
+    <div class="tray">
+      <div class="tray-group">
+        <h3 class="ui-font">Funciones (autómata → SQL)</h3>
+        <div class="chips" id="chipsFunc"></div>
+      </div>
+      <div class="tray-group">
+        <h3 class="ui-font">Argumentos</h3>
+        <div class="chips" id="chipsArg"></div>
+      </div>
+      <div class="tray-group">
+        <h3 class="ui-font">Condiciones</h3>
+        <div class="chips" id="chipsCond"></div>
+      </div>
+    </div>
+
+    <div class="terminal">
+      <h2 class="ui-font">Pantalla del autómata — tabla Estudiantes</h2>
+      <table id="dataTable"></table>
+      <div class="result-line" id="resultLine" style="display:none;">
+        Resultado calculado: <span class="val" id="resultVal">—</span>
+      </div>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <div class="final" id="finalScreen">
+    <h2 class="ui-font">Consulta completada</h2>
+    <p id="finalText"></p>
+    <button class="btn-run" id="restartBtn">Volver a empezar</button>
+  </div>
+
+</div>
+
+<script>
+/* ---------- datos de la tabla Estudiantes ---------- */
+const rows = [
+  {id:1, nombre:"Anaclara Fernández", edad:16, curso:"6to A", nota_promedio:7.5, cuotas_pagadas:10},
+  {id:2, nombre:"Bruno Silva",        edad:15, curso:"6to A", nota_promedio:null, cuotas_pagadas:8},
+  {id:3, nombre:"Camila Duarte",      edad:17, curso:"6to B", nota_promedio:5.8, cuotas_pagadas:12},
+  {id:4, nombre:"Diego Ramírez",      edad:16, curso:"6to A", nota_promedio:8.2, cuotas_pagadas:10},
+  {id:5, nombre:"Emilia Castro",      edad:15, curso:"6to B", nota_promedio:null, cuotas_pagadas:6},
+  {id:6, nombre:"Franco Pereyra",     edad:16, curso:"6to A", nota_promedio:6.1, cuotas_pagadas:11},
+  {id:7, nombre:"Gimena López",       edad:17, curso:"6to B", nota_promedio:9.0, cuotas_pagadas:12},
+  {id:8, nombre:"Hernán Souza",       edad:15, curso:"6to A", nota_promedio:4.5, cuotas_pagadas:7},
+  {id:9, nombre:"Ivana Correa",       edad:16, curso:"6to B", nota_promedio:7.0, cuotas_pagadas:10},
+  {id:10,nombre:"Joaquín Bentancur",  edad:17, curso:"6to A", nota_promedio:null, cuotas_pagadas:9},
+];
+const numericCols = ["edad","nota_promedio","cuotas_pagadas","id"];
+
+/* ---------- piezas disponibles ---------- */
+const FUNCS = [
+  {id:"COUNT", label:"COUNT", sub:"CONTAME"},
+  {id:"SUM",   label:"SUM",   sub:"SUMAME"},
+  {id:"AVG",   label:"AVG",   sub:"PROMEDIAME"},
+  {id:"MAX",   label:"MAX",   sub:"MAYOR"},
+  {id:"MIN",   label:"MIN",   sub:"MENOR"},
+];
+const ARGS = [
+  {id:"*", label:"*"},
+  {id:"nota_promedio", label:"nota_promedio"},
+  {id:"edad", label:"edad"},
+  {id:"cuotas_pagadas", label:"cuotas_pagadas"},
+  {id:"nombre", label:"nombre"},
+];
+const CONDS = [
+  {id:"edad_gt_15", label:"edad > 15", col:"edad", op:">", val:15},
+  {id:"nota_gte_6", label:"nota_promedio >= 6", col:"nota_promedio", op:">=", val:6},
+];
+
+/* ---------- desafíos ---------- */
+const challenges = [
+  {
+    text:"La Adscripción necesita saber cuántos estudiantes hay inscriptos en total en el grupo. No queremos traer la lista fila por fila, queremos un único número.",
+    func:"COUNT", arg:"*", useWhere:false,
+    note:"COUNT(*) cuenta filas como entidades completas, existan o no valores en sus columnas — por eso admite el comodín *."
+  },
+  {
+    text:"Querés saber cuál fue la nota promedio general del turno, considerando solo a quienes tienen nota cargada.",
+    func:"AVG", arg:"nota_promedio", useWhere:false,
+    note:"AVG opera sobre el dominio de la columna e ignora automáticamente los valores NULL."
+  },
+  {
+    text:"La Dirección pregunta cuál fue la nota más alta registrada este trimestre.",
+    func:"MAX", arg:"nota_promedio", useWhere:false,
+    note:"MAYOR ➔ MAX() exige una columna numérica; sobre una columna de texto no tiene sentido de orden."
+  },
+  {
+    text:"Necesitamos saber cuántos estudiantes están aprobados: aquellos con nota_promedio mayor o igual a 6.",
+    func:"COUNT", arg:"*", useWhere:true, cond:"nota_gte_6",
+    note:"Primero WHERE filtra horizontalmente las filas que cumplen la condición; recién después la función agrega el resultado."
+  },
+  {
+    text:"¿Cuál es la edad mínima entre los estudiantes mayores de 15 años?",
+    func:"MIN", arg:"edad", useWhere:true, cond:"edad_gt_15",
+    note:"MENOR ➔ MIN() sobre el subconjunto filtrado por WHERE edad > 15."
+  },
+  {
+    text:"El sistema necesita saber cuántos estudiantes tienen la nota_promedio efectivamente cargada (no vacía).",
+    func:"COUNT", arg:"nota_promedio", useWhere:false,
+    note:"COUNT(nota_promedio) responde '¿cuántos registros tienen dato válido en esta columna?' — por eso da un número distinto a COUNT(*)."
+  },
+  {
+    text:"Calculá el total acumulado de cuotas pagadas por todo el grupo.",
+    func:"SUM", arg:"cuotas_pagadas", useWhere:false,
+    note:"SUM suma los valores del dominio de una columna numérica específica."
+  },
+];
+
+/* ---------- estado ---------- */
+let current = 0;
+let score = 0;
+let placed = {func:null, arg:null, cond:null};
+let selectedChip = null; // {kind, id}
+let solved = false;
+
+const el = id => document.getElementById(id);
+document.getElementById("challengeTotal").textContent = challenges.length;
+
+function renderChips(){
+  const fc = el("chipsFunc"); fc.innerHTML = "";
+  FUNCS.forEach(f=>{
+    const c = document.createElement("div");
+    c.className = "chip func"; c.draggable = true;
+    c.innerHTML = `${f.label}<small>${f.sub}</small>`;
+    c.onclick = ()=>selectChip("func", f.id, c);
+    c.ondragstart = e=>e.dataTransfer.setData("text/plain", JSON.stringify({kind:"func", id:f.id}));
+    fc.appendChild(c);
+  });
+  const ac = el("chipsArg"); ac.innerHTML = "";
+  ARGS.forEach(a=>{
+    const c = document.createElement("div");
+    c.className = "chip arg"; c.draggable = true;
+    c.innerHTML = `${a.label}`;
+    c.onclick = ()=>selectChip("arg", a.id, c);
+    c.ondragstart = e=>e.dataTransfer.setData("text/plain", JSON.stringify({kind:"arg", id:a.id}));
+    ac.appendChild(c);
+  });
+  const cc = el("chipsCond"); cc.innerHTML = "";
+  CONDS.forEach(cd=>{
+    const c = document.createElement("div");
+    c.className = "chip cond"; c.draggable = true;
+    c.innerHTML = `${cd.label}`;
+    c.onclick = ()=>selectChip("cond", cd.id, c);
+    c.ondragstart = e=>e.dataTransfer.setData("text/plain", JSON.stringify({kind:"cond", id:cd.id}));
+    cc.appendChild(c);
+  });
+}
+
+function selectChip(kind, id, node){
+  document.querySelectorAll(".chip.selected").forEach(n=>n.classList.remove("selected"));
+  if(selectedChip && selectedChip.kind===kind && selectedChip.id===id){
+    selectedChip = null; return;
+  }
+  selectedChip = {kind, id};
+  node.classList.add("selected");
+}
+
+function setupSlots(){
+  ["Func","Arg","Cond"].forEach(cap=>{
+    const kind = cap.toLowerCase();
+    const slot = el("slot"+cap);
+    slot.onclick = ()=>{
+      if(placed[kind]){ placed[kind]=null; renderBench(); return; }
+      if(selectedChip){
+        if(selectedChip.kind !== kind) return;
+        placed[kind] = selectedChip.id;
+        selectedChip = null;
+        document.querySelectorAll(".chip.selected").forEach(n=>n.classList.remove("selected"));
+        renderBench();
+      }
+    };
+    slot.ondragover = e=>{ e.preventDefault(); slot.classList.add("hover"); };
+    slot.ondragleave = ()=> slot.classList.remove("hover");
+    slot.ondrop = e=>{
+      e.preventDefault(); slot.classList.remove("hover");
+      const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+      if(data.kind !== kind) return;
+      placed[kind] = data.id;
+      renderBench();
+    };
+  });
+}
+
+function renderBench(){
+  const labelFor = (kind,id)=>{
+    if(!id) return null;
+    if(kind==="func") return FUNCS.find(f=>f.id===id).label;
+    if(kind==="arg") return ARGS.find(a=>a.id===id).label;
+    if(kind==="cond") return CONDS.find(c=>c.id===id).label;
+  };
+  ["func","arg","cond"].forEach(kind=>{
+    const cap = kind[0].toUpperCase()+kind.slice(1);
+    const slotEl = el("slot"+cap);
+    const val = placed[kind];
+    slotEl.classList.toggle("filled", !!val);
+    slotEl.innerHTML = val ? labelFor(kind,val) : `<span class="hint">${kind==="func"?"función":kind==="arg"?"argumento":"condición"}</span>`;
+  });
+}
+
+el("whereToggle").addEventListener("change", e=>{
+  const on = e.target.checked;
+  el("whereKeyword").style.display = on ? "inline" : "none";
+  el("slotCond").style.display = on ? "flex" : "none";
+  if(!on) placed.cond = null;
+  renderBench();
+});
+
+function renderTable(activeCond){
+  const cond = activeCond ? CONDS.find(c=>c.id===activeCond) : null;
+  const passes = r => !cond ? true : (cond.op===">" ? r[cond.col] !== null && r[cond.col] > cond.val
+                                    : cond.op===">=" ? r[cond.col] !== null && r[cond.col] >= cond.val : true);
+  let html = "<tr><th>id</th><th>nombre</th><th>edad</th><th>curso</th><th>nota_promedio</th><th>cuotas_pagadas</th></tr>";
+  rows.forEach(r=>{
+    const incl = passes(r);
+    html += `<tr class="${cond ? (incl?'included':'excluded') : ''}">
+      <td>${r.id}</td><td>${r.nombre}</td><td>${r.edad}</td><td>${r.curso}</td>
+      <td class="${r.nota_promedio===null?'null-val':''}">${r.nota_promedio===null?'NULL':r.nota_promedio}</td>
+      <td>${r.cuotas_pagadas}</td></tr>`;
+  });
+  el("dataTable").innerHTML = html;
+}
+renderTable(null);
+
+function computeResult(func, arg, condId){
+  const cond = condId ? CONDS.find(c=>c.id===condId) : null;
+  const filtered = rows.filter(r=>{
+    if(!cond) return true;
+    if(cond.op===">") return r[cond.col] !== null && r[cond.col] > cond.val;
+    if(cond.op===">=") return r[cond.col] !== null && r[cond.col] >= cond.val;
+    return true;
+  });
+  if(func==="COUNT" && arg==="*") return filtered.length;
+  const vals = filtered.map(r=>r[arg]).filter(v=>v!==null && v!==undefined);
+  if(func==="COUNT") return vals.length;
+  if(vals.length===0) return null;
+  if(func==="SUM") return round(vals.reduce((a,b)=>a+b,0));
+  if(func==="AVG") return round(vals.reduce((a,b)=>a+b,0)/vals.length);
+  if(func==="MAX") return round(Math.max(...vals));
+  if(func==="MIN") return round(Math.min(...vals));
+  return null;
+}
+function round(n){ return Math.round(n*100)/100; }
+
+function loadChallenge(i){
+  solved = false;
+  placed = {func:null, arg:null, cond:null};
+  selectedChip = null;
+  el("whereToggle").checked = false;
+  el("whereKeyword").style.display = "none";
+  el("slotCond").style.display = "none";
+  el("resultLine").style.display = "none";
+  el("feedback").className = "feedback";
+  el("feedback").textContent = "";
+  el("nextBtn").style.display = "none";
+  el("challengeNum").textContent = i+1;
+  el("challengeText").textContent = challenges[i].text;
+  renderBench();
+  renderTable(null);
+  document.querySelectorAll(".chip").forEach(c=>c.classList.remove("selected"));
+}
+
+el("resetBtn").onclick = ()=>{
+  if(solved) return;
+  placed = {func:null, arg:null, cond:null};
+  el("whereToggle").checked = false;
+  el("whereKeyword").style.display = "none";
+  el("slotCond").style.display = "none";
+  renderBench();
+  renderTable(null);
+};
+
+el("runBtn").onclick = ()=>{
+  const ch = challenges[current];
+  const useWhere = el("whereToggle").checked;
+  if(!placed.func || !placed.arg || (useWhere && !placed.cond)){
+    showFeedback(false, "Faltan piezas por colocar en el banco de consulta antes de ejecutar.");
+    return;
+  }
+  const nonNumeric = placed.arg === "nombre" && placed.func !== "COUNT";
+  const activeCond = useWhere ? placed.cond : null;
+  renderTable(activeCond);
+
+  if(nonNumeric){
+    el("resultLine").style.display = "block";
+    el("resultVal").textContent = "ERROR";
+    showFeedback(false, `${placed.func} necesita una columna numérica. Sobre "nombre" no existe un mayor, menor, suma ni promedio posible — recordá la pregunta que vimos en clase.`);
+    return;
+  }
+
+  const result = computeResult(placed.func, placed.arg, activeCond);
+  el("resultLine").style.display = "block";
+  el("resultVal").textContent = result===null ? "sin datos" : result;
+
+  const correct = placed.func===ch.func && placed.arg===ch.arg &&
+                   useWhere===ch.useWhere && (!ch.useWhere || placed.cond===ch.cond);
+
+  if(correct){
+    score++;
+    el("scoreNum").textContent = score;
+    solved = true;
+    showFeedback(true, `Correcto. ${ch.note}`);
+    el("nextBtn").style.display = "inline-block";
+  } else {
+    showFeedback(false, `Ese resultado no responde lo que se pregunta. Pista: ${ch.note}`);
+  }
+};
+
+function showFeedback(ok, msg){
+  const f = el("feedback");
+  f.className = "feedback " + (ok ? "ok" : "err");
+  f.textContent = (ok ? "✓ " : "✕ ") + msg;
+}
+
+el("nextBtn").onclick = ()=>{
+  current++;
+  if(current >= challenges.length){
+    document.getElementById("game").style.display = "none";
+    document.getElementById("finalScreen").style.display = "block";
+    document.getElementById("finalText").textContent =
+      `Resolviste ${score} de ${challenges.length} desafíos correctamente en tu primer intento por consulta.`;
+    return;
+  }
+  loadChallenge(current);
+};
+
+el("restartBtn").onclick = ()=>{
+  current = 0; score = 0;
+  el("scoreNum").textContent = 0;
+  document.getElementById("finalScreen").style.display = "none";
+  document.getElementById("game").style.display = "block";
+  loadChallenge(0);
+};
+
+renderChips();
+setupSlots();
+loadChallenge(0);
+</script>
+</body>
+</html>

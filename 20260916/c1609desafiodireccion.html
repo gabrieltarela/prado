@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desafío de la Dirección: Traer la Lista vs. Agregar</title>
+  <style>
+    /* VARIABLES DE COLOR EN TONOS PASTEL, FONDOS CLAROS Y TEXTO OSCURO */
+    :root {
+      --bg-body: #f8fafc;
+      --bg-card: #ffffff;
+      
+      --text-main: #0f172a;      /* Oscuro principal para máxima legibilidad */
+      --text-muted: #475569;     /* Gris oscuro secundario */
+      
+      /* Tonos Pastel */
+      --pastel-blue-bg: #e0f2fe;
+      --pastel-blue-border: #bae6fd;
+      --pastel-blue-text: #0369a1;
+
+      --pastel-green-bg: #dcfce7;
+      --pastel-green-border: #86efac;
+      --pastel-green-text: #15803d;
+
+      --pastel-red-bg: #fee2e2;
+      --pastel-red-border: #fca5a5;
+      --pastel-red-text: #b91c1c;
+
+      --pastel-amber-bg: #fef3c7;
+      --pastel-amber-border: #fde047;
+      --pastel-amber-text: #b45309;
+
+      --pastel-purple-bg: #f3e8ff;
+      --pastel-purple-border: #d8b4fe;
+      --pastel-purple-text: #6b21a8;
+
+      --border-light: #e2e8f0;
+      --radius: 16px;
+      --shadow-sm: 0 2px 4px rgba(0,0,0,0.04);
+      --shadow-md: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.02);
+      --font-mono: 'Consolas', 'Fira Code', 'Monaco', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem;
+    }
+
+    /* CONTENEDOR PRINCIPAL */
+    .app-container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* HEADER */
+    header {
+      background: linear-gradient(135deg, var(--pastel-purple-bg), var(--pastel-blue-bg));
+      border: 1px solid var(--pastel-purple-border);
+      border-radius: var(--radius);
+      padding: 1.5rem 2rem;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .header-title h1 {
+      font-size: 1.3rem;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .header-title p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    .status-panel {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .status-box {
+      background: var(--bg-card);
+      padding: 0.5rem 1rem;
+      border-radius: 12px;
+      border: 1px solid var(--border-light);
+      text-align: center;
+    }
+
+    .status-box .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .status-box .value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    /* MEDIDOR DE ESTRÉS DEL SERVIDOR */
+    .stress-container {
+      width: 140px;
+    }
+
+    .stress-bar-bg {
+      height: 10px;
+      background-color: var(--border-light);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .stress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background-color: #4ade80;
+      transition: width 0.4s ease, background-color 0.4s ease;
+    }
+
+    /* TARJETA DE JUEGO */
+    .game-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius);
+      padding: 2rem;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* DIÁLOGO DEL DIRECTOR */
+    .director-dialog {
+      background-color: var(--pastel-blue-bg);
+      border: 1px solid var(--pastel-blue-border);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .director-avatar {
+      font-size: 2.2rem;
+      background: var(--bg-card);
+      padding: 0.4rem 0.6rem;
+      border-radius: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .director-text h3 {
+      font-size: 1rem;
+      color: var(--pastel-blue-text);
+      margin-bottom: 0.3rem;
+    }
+
+    .director-text p {
+      font-size: 0.95rem;
+      color: var(--text-main);
+      line-height: 1.4;
+    }
+
+    /* OPCIONES DE RESPUESTA */
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .option-btn {
+      background-color: var(--bg-card);
+      border: 2px solid var(--border-light);
+      border-radius: 12px;
+      padding: 1.1rem 1.25rem;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      color: var(--text-main);
+      font-size: 0.95rem;
+    }
+
+    .option-btn:hover {
+      border-color: #cbd5e1;
+      background-color: #f1f5f9;
+      transform: translateY(-2px);
+    }
+
+    .option-btn .code-tag {
+      font-family: var(--font-mono);
+      font-weight: bold;
+      background: #f1f5f9;
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      color: #334155;
+      border: 1px solid var(--border-light);
+    }
+
+    /* FEEDBACK Y EXPLICACIÓN */
+    .feedback-box {
+      border-radius: 12px;
+      padding: 1.25rem;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      display: none;
+    }
+
+    .feedback-box.correct {
+      display: block;
+      background-color: var(--pastel-green-bg);
+      border: 1px solid var(--pastel-green-border);
+      color: var(--pastel-green-text);
+    }
+
+    .feedback-box.incorrect {
+      display: block;
+      background-color: var(--pastel-red-bg);
+      border: 1px solid var(--pastel-red-border);
+      color: var(--pastel-red-text);
+    }
+
+    .feedback-box h4 {
+      margin-bottom: 0.4rem;
+      font-size: 1rem;
+    }
+
+    /* BOTÓN SIGUIENTE */
+    .btn-next {
+      background-color: var(--text-main);
+      color: var(--bg-card);
+      border: none;
+      border-radius: 10px;
+      padding: 0.85rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      align-self: flex-end;
+      transition: background-color 0.2s;
+    }
+
+    .btn-next:hover {
+      background-color: #334155;
+    }
+
+    /* PANTALLA DE INICIO Y FIN */
+    .center-screen {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.25rem;
+      padding: 1rem 0;
+    }
+
+    .center-screen h2 {
+      font-size: 1.5rem;
+      color: var(--text-main);
+    }
+
+    .center-screen p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      max-width: 600px;
+      line-height: 1.6;
+    }
+
+    .badge-tag {
+      background-color: var(--pastel-amber-bg);
+      color: var(--pastel-amber-text);
+      border: 1px solid var(--pastel-amber-border);
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .summary-card {
+      background-color: var(--pastel-purple-bg);
+      border: 1px solid var(--pastel-purple-border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      text-align: left;
+      width: 100%;
+      font-size: 0.9rem;
+      color: var(--pastel-purple-text);
+      line-height: 1.6;
+    }
+
+    .summary-card ul {
+      margin-left: 1.25rem;
+      margin-top: 0.5rem;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- ENCABEZADO -->
+    <header>
+      <div class="header-title">
+        <h1>🏢 Desafío de la Dirección</h1>
+        <p>Departamento de Adscripción • Traer la Lista vs. Agregación</p>
+      </div>
+
+      <div class="status-panel">
+        <div class="status-box">
+          <div class="label">Solicitud</div>
+          <div class="value" id="round-indicator">0 / 5</div>
+        </div>
+
+        <div class="status-box stress-container">
+          <div class="label">Estrés Servidor</div>
+          <div class="stress-bar-bg">
+            <div id="stress-bar" class="stress-bar-fill"></div>
+          </div>
+        </div>
+
+        <div class="status-box">
+          <div class="label">Puntos</div>
+          <div class="value" id="score-display">0</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- TARJETA PRINCIPAL DEL JUEGO -->
+    <main class="game-card">
+
+      <!-- PANTALLA INICIAL -->
+      <div id="screen-start" class="center-screen">
+        <div style="font-size: 3.5rem;">📋⚡</div>
+        <h2>¡Bienvenido a la Oficina de Adscripción!</h2>
+        <p>
+          El Director del instituto necesita respuestas <strong>urgentes e inmediatas</strong> para tomar decisiones.
+        </p>
+        <p>
+          <strong>Tu objetivo:</strong> Responder a sus consultas de la forma más rápida y eficiente posible. 
+          Si intentas traer la lista de 500 filas una por una para calcular los datos manualmente, <strong>sobrecargarás el servidor</strong> y el Director perderá la paciencia.
+        </p>
+        <button class="btn-next" onclick="startGame()" style="align-self: center; margin-top: 0.5rem;">
+          🚀 Comenzar Turno de Trabajo
+        </button>
+      </div>
+
+      <!-- PANTALLA DE PREGUNTAS (JUEGO) -->
+      <div id="screen-game" class="hidden" style="display: flex; flex-direction: column; gap: 1.5rem;">
+        
+        <!-- Diálogo del Director -->
+        <div class="director-dialog">
+          <div class="director-avatar">👔</div>
+          <div class="director-text">
+            <h3>El Director solicita:</h3>
+            <p id="director-prompt">Cargando pregunta...</p>
+          </div>
+        </div>
+
+        <!-- Opciones de decisión -->
+        <div class="options-grid" id="options-container">
+          <!-- Se cargan dinámicamente con JS -->
+        </div>
+
+        <!-- Explicación pedagógica post-respuesta -->
+        <div id="feedback-box" class="feedback-box">
+          <h4 id="feedback-title">¡Resultado!</h4>
+          <p id="feedback-text">Explicación técnica...</p>
+        </div>
+
+        <!-- Botón para avanzar -->
+        <button id="btn-next" class="btn-next hidden" onclick="nextQuestion()">
+          Siguiente Solicitud ➔
+        </button>
+
+      </div>
+
+      <!-- PANTALLA DE RESULTADOS -->
+      <div id="screen-end" class="center-screen hidden">
+        <div id="end-icon" style="font-size: 3.5rem;">🎖️</div>
+        <h2 id="end-title">¡Turno Finalizado!</h2>
+        <span id="end-badge" class="badge-tag">Desempeño Excelente</span>
+        <p id="end-desc">Has completado las solicitudes del día.</p>
+
+        <div class="summary-card">
+          <strong>📌 Lección Clave de Bases de Datos:</strong>
+          <ul>
+            <li><strong>Traer 500 filas una por una (SELECT simple):</strong> Transfiere un gran volumen de datos innecesarios por la red y fuerza a la aplicación a procesar.</li>
+            <li><strong>Funciones de Agregación (COUNT, SUM, AVG, MAX, MIN):</strong> Realizan el cálculo vertical directamente en el motor de la base de datos y devuelven un <strong>único valor condensado</strong> listo para decidir.</li>
+          </ul>
+        </div>
+
+        <button class="btn-next" onclick="resetGame()" style="align-self: center;">
+          🔄 Jugar de Nuevo
+        </button>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    // PREGUNTAS ALINEADAS CON LA PLANIFICACIÓN DE LA CLASE
+    const questions = [
+      {
+        prompt: "¡Necesito saber urgente cuál es el promedio general de calificaciones de todo el turno de 500 estudiantes! ¿Cómo lo obtenemos?",
+        options: [
+          {
+            text: "Hacer SELECT * FROM Estudiantes, descargar las 500 filas en Excel y calcular el promedio a mano.",
+            code: "SELECT *",
+            isCorrect: false,
+            stressAdd: 40,
+            feedback: "❌ ¡Servidor sobrecargado! Transferiste 500 filas por la red para calcular un solo número. El Director esperó demasiado tiempo."
+          },
+          {
+            text: "Ejecutar la función de agregación vertical para calcular el promedio directo en el servidor.",
+            code: "SELECT AVG(nota_promedio) FROM Estudiantes;",
+            isCorrect: true,
+            stressAdd: 0,
+            feedback: "✅ ¡Perfecto y al instante! La función AVG() realiza el cálculo vertical en la base de datos y te devuelve un único valor representativo sin sobrecargar nada."
+          },
+          {
+            text: "Filtrar con WHERE nota_promedio = 6 para ver cuántos aprobaron.",
+            code: "WHERE nota_promedio = 6",
+            isCorrect: false,
+            stressAdd: 20,
+            feedback: "❌ Error conceptual: WHERE realiza un filtrado horizontal de filas, pero no calcula el promedio general del grupo."
+          }
+        ]
+      },
+      {
+        prompt: "Adscripción necesita confirmar el número TOTAL exacto de estudiantes inscriptos en la institución.",
+        options: [
+          {
+            text: "Contar la cantidad total de tuplas/filas existentes en la tabla.",
+            code: "SELECT COUNT(*) FROM Estudiantes;",
+            isCorrect: true,
+            stressAdd: 0,
+            feedback: "✅ ¡Excelente! COUNT(*) evalúa la existencia de filas completas como entidad y devuelve el total de alumnos (incluso si tienen celdas vacías)."
+          },
+          {
+            text: "Traer la lista con id_estudiante y nombre e ir contando fila por fila con el dedo.",
+            code: "SELECT id, nombre",
+            isCorrect: false,
+            stressAdd: 40,
+            feedback: "❌ ¡Ineficiente! Contar manualmente 500 registros quita tiempo valioso y genera errores humanos."
+          },
+          {
+            text: "Contar sobre la columna de notas finales para ver la cantidad.",
+            code: "SELECT COUNT(nota_promedio)",
+            isCorrect: false,
+            stressAdd: 20,
+            feedback: "⚠️ Cuidado: COUNT(columna) ignora a los estudiantes con valor NULL (sin nota ingresada), por lo que te habría dado un número menor al total real."
+          }
+        ]
+      },
+      {
+        prompt: "El departamento contable pide el monto total acumulado de cuotas pagadas por los alumnos este mes.",
+        options: [
+          {
+            text: "Traer cada valor de cuota uno por uno y sumar con una calculadora de escritorio.",
+            code: "SELECT cuota FROM Pagos;",
+            isCorrect: false,
+            stressAdd: 40,
+            feedback: "❌ ¡Demasiado lento! Volviste a traer cientos de filas en vez de dejar que el motor SQL procese la suma."
+          },
+          {
+            text: "Sumar de manera acumulada todos los valores de la columna de cuotas.",
+            code: "SELECT SUM(cuota) FROM Pagos;",
+            isCorrect: true,
+            stressAdd: 0,
+            feedback: "✅ ¡Respuesta inmediata! SUM() opera sobre el dominio de un atributo numérico y condensa todos los importes en un único valor total."
+          }
+        ]
+      },
+      {
+        prompt: "Para la ceremonia de fin de curso, el Director quiere saber únicamente cuál fue la nota más alta lograda en el examen final.",
+        options: [
+          {
+            text: "Encontrar directamente el valor máximo registrado en la columna de calificaciones.",
+            code: "SELECT MAX(nota_promedio) FROM Estudiantes;",
+            isCorrect: true,
+            stressAdd: 0,
+            feedback: "✅ ¡Brillante! MAX() escanea la columna e identifica la calificación máxima en milisegundos."
+          },
+          {
+            text: "Traer la lista completa de alumnos ordenada y buscar a ojo en la pantalla cuál es la nota más alta.",
+            code: "SELECT * FROM Estudiantes ORDER BY...",
+            isCorrect: false,
+            stressAdd: 30,
+            feedback: "❌ Innecesario: Traer todas las tuplas para mirar solo la primera o última fila gasta ancho de banda de red."
+          }
+        ]
+      },
+      {
+        prompt: "Atención a este caso: El Director pregunta cuántos estudiantes TIENEN NOTA REGISTRADA ya (hay alumnos ausentes que tienen valor NULL).",
+        options: [
+          {
+            text: "Usar COUNT(*) que cuenta todas las filas de la tabla.",
+            code: "SELECT COUNT(*) FROM Estudiantes;",
+            isCorrect: false,
+            stressAdd: 30,
+            feedback: "❌ Incorrecto: COUNT(*) habría contado también a los estudiantes ausentes con NULL, dando una cifra falsa."
+          },
+          {
+            text: "Contar específicamente sobre el atributo nota_promedio para ignorar los valores NULL.",
+            code: "SELECT COUNT(nota_promedio) FROM Estudiantes;",
+            isCorrect: true,
+            stressAdd: 0,
+            feedback: "✅ ¡Magistral! Comprendiste la diferencia: COUNT(atributo) sólo cuenta registros con datos válidos e ignora automáticamente los valores NULL."
+          }
+        ]
+      }
+    ];
+
+    // ESTADO DEL JUEGO
+    let currentQ = 0;
+    let score = 0;
+    let stress = 0;
+
+    function startGame() {
+      document.getElementById('screen-start').classList.add('hidden');
+      document.getElementById('screen-game').classList.remove('hidden');
+      currentQ = 0;
+      score = 0;
+      stress = 0;
+      updateHeader();
+      loadQuestion();
+    }
+
+    function updateHeader() {
+      document.getElementById('round-indicator').innerText = `${currentQ + 1} / ${questions.length}`;
+      document.getElementById('score-display').innerText = score;
+
+      const stressBar = document.getElementById('stress-bar');
+      stressBar.style.width = `${Math.min(stress, 100)}%`;
+
+      if (stress < 40) {
+        stressBar.style.backgroundColor = '#4ade80'; // Pastel Verde
+      } else if (stress < 70) {
+        stressBar.style.backgroundColor = '#facc15'; // Pastel Amarillo
+      } else {
+        stressBar.style.backgroundColor = '#f87171'; // Pastel Rojo
+      }
+    }
+
+    function loadQuestion() {
+      const q = questions[currentQ];
+      document.getElementById('director-prompt').innerText = q.prompt;
+
+      const container = document.getElementById('options-container');
+      container.innerHTML = '';
+
+      // Ocultar feedback y botón de avanzar
+      const feedbackBox = document.getElementById('feedback-box');
+      feedbackBox.className = 'feedback-box';
+      feedbackBox.style.display = 'none';
+      document.getElementById('btn-next').classList.add('hidden');
+
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerHTML = `
+          <span>${opt.text}</span>
+          <span class="code-tag">${opt.code}</span>
+        `;
+        btn.onclick = () => selectOption(idx);
+        container.appendChild(btn);
+      });
+
+      updateHeader();
+    }
+
+    function selectOption(optIndex) {
+      const q = questions[currentQ];
+      const selected = q.options[optIndex];
+
+      // Deshabilitar todos los botones para evitar doble clic
+      const buttons = document.querySelectorAll('.option-btn');
+      buttons.forEach(b => b.style.pointerEvents = 'none');
+
+      const feedbackBox = document.getElementById('feedback-box');
+      const feedbackTitle = document.getElementById('feedback-title');
+      const feedbackText = document.getElementById('feedback-text');
+
+      if (selected.isCorrect) {
+        score += 100;
+        feedbackBox.className = 'feedback-box correct';
+        feedbackTitle.innerText = '🎉 ¡Respuesta Eficiente!';
+      } else {
+        stress += selected.stressAdd;
+        feedbackBox.className = 'feedback-box incorrect';
+        feedbackTitle.innerText = '⚠️ Elección Ineficiente';
+      }
+
+      feedbackText.innerText = selected.feedback;
+      feedbackBox.style.display = 'block';
+
+      updateHeader();
+      document.getElementById('btn-next').classList.remove('hidden');
+    }
+
+    function nextQuestion() {
+      currentQ++;
+      if (currentQ < questions.length) {
+        loadQuestion();
+      } else {
+        showEndScreen();
+      }
+    }
+
+    function showEndScreen() {
+      document.getElementById('screen-game').classList.add('hidden');
+      document.getElementById('screen-end').classList.remove('hidden');
+
+      const endIcon = document.getElementById('end-icon');
+      const endTitle = document.getElementById('end-title');
+      const endBadge = document.getElementById('end-badge');
+      const endDesc = document.getElementById('end-desc');
+
+      if (stress >= 70) {
+        endIcon.innerText = '💥';
+        endTitle.innerText = '¡Servidor Colapsado!';
+        endBadge.innerText = 'Estrés Crítico';
+        endBadge.style.backgroundColor = 'var(--pastel-red-bg)';
+        endBadge.style.color = 'var(--pastel-red-text)';
+        endDesc.innerText = `Acumulaste ${stress}% de estrés en el servidor por traer listas de datos inútilmente. Recuerda utilizar siempre las funciones de agregación.`;
+      } else if (score >= 400) {
+        endIcon.innerText = '🏆';
+        endTitle.innerText = '¡Gestión Impecable!';
+        endBadge.innerText = 'Experto en Agregación SQL';
+        endBadge.style.backgroundColor = 'var(--pastel-green-bg)';
+        endBadge.style.color = 'var(--pastel-green-text)';
+        endDesc.innerText = `Puntaje final: ${score} pts. El Director está encantado con la rapidez de los reportes.`;
+      } else {
+        endIcon.innerText = '📊';
+        endTitle.innerText = 'Turno Completado';
+        endBadge.innerText = 'En Entrenamiento';
+        endDesc.innerText = `Obtuviste ${score} pts. Repasa la diferencia entre recorrer filas una por una y condensar con agregación.`;
+      }
+    }
+
+    function resetGame() {
+      document.getElementById('screen-end').classList.add('hidden');
+      document.getElementById('screen-start').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>

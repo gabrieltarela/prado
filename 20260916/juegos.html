@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bases de Datos - Portal Principal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0A192F 0%, #0D282E 50%, #003B46 100%);
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-border: rgba(0, 230, 195, 0.2);
+            --text-light: #F0FDF4;
+            --text-muted: #94A3B8;
+            --accent-teal: #00E6C3;
+            --accent-glow: rgba(0, 230, 195, 0.3);
+            --accent-primary: #00897B;
+            --accent-secondary: #0284C7;
+            --radius: 18px;
+            --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 24px 16px;
+        }
+
+        /* Container Card */
+        .portal-container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 28px;
+            padding: 36px 24px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        /* Header section */
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 230, 195, 0.1);
+            border: 1px solid rgba(0, 230, 195, 0.3);
+            color: var(--accent-teal);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 20px;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .portal-header h1 {
+            font-size: 2.1rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 8px;
+            background: linear-gradient(180deg, #FFFFFF 0%, #C1F0E7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .portal-header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 32px;
+            font-weight: 500;
+        }
+
+        /* Vertical Navigation Menu */
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .menu-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 18px 22px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: var(--radius);
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 1.05rem;
+            font-weight: 700;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn-content {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .btn-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-teal);
+            transition: all 0.25s ease;
+        }
+
+        .btn-icon svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .arrow-icon {
+            opacity: 0.5;
+            transform: translateX(0);
+            transition: all 0.25s ease;
+        }
+
+        /* Hover & Active States for Games */
+        .menu-btn:hover {
+            background: rgba(0, 230, 195, 0.12);
+            border-color: var(--accent-teal);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -4px var(--accent-glow);
+        }
+
+        .menu-btn:hover .btn-icon {
+            background: var(--accent-teal);
+            color: #0D282E;
+        }
+
+        .menu-btn:hover .arrow-icon {
+            opacity: 1;
+            transform: translateX(4px);
+            color: var(--accent-teal);
+        }
+
+        .menu-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Featured Button: Ejercicios */
+        .menu-btn.btn-featured {
+            background: linear-gradient(135deg, var(--accent-primary) 0%, #00695C 100%);
+            border: 1px solid rgba(0, 230, 195, 0.4);
+            box-shadow: 0 6px 18px rgba(0, 137, 123, 0.3);
+        }
+
+        .menu-btn.btn-featured .btn-icon {
+            background: rgba(255, 255, 255, 0.2);
+            color: #FFFFFF;
+        }
+
+        .menu-btn.btn-featured:hover {
+            background: linear-gradient(135deg, #009688 0%, var(--accent-primary) 100%);
+            border-color: #A7FFEB;
+            box-shadow: 0 10px 25px rgba(0, 150, 136, 0.4);
+        }
+
+        .menu-btn.btn-featured:hover .btn-icon {
+            background: #FFFFFF;
+            color: var(--teal-dark);
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 28px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 480px) {
+            .portal-container {
+                padding: 28px 18px;
+            }
+
+            .portal-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .menu-btn {
+                padding: 16px 18px;
+                font-size: 1rem;
+            }
+
+            .btn-icon {
+                width: 38px;
+                height: 38px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <main class="portal-container">
+        <!-- Header -->
+        <header class="portal-header">
+            <span class="brand-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                Asignatura
+            </span>
+            <h1>Bases de Datos</h1>
+            <p>Selecciona un módulo o actividad interactiva para comenzar</p>
+        </header>
+
+        <!-- Menu Navigation -->
+        <nav class="nav-menu">
+            <!-- Juego 1 -->
+            <a href="C1609escape.html" class="menu-btn">
+                <div class="btn-content">
+                    <div class="btn-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+                    </div>
+                    <span>Juego 1</span>
+                </div>
+                <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+
+            <!-- Juego 2 -->
+            <a href="juego2.html" class="menu-btn">
+                <div class="btn-content">
+                    <div class="btn-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+                    </div>
+                    <span>Juego 2</span>
+                </div>
+                <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+
+            <!-- Juego 3 -->
+            <a href="juego3.html" class="menu-btn">
+                <div class="btn-content">
+                    <div class="btn-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+                    </div>
+                    <span>Juego 3</span>
+                </div>
+                <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+
+            <!-- Juego 4 -->
+            <a href="juego4.html" class="menu-btn">
+                <div class="btn-content">
+                    <div class="btn-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+                    </div>
+                    <span>Juego 4</span>
+                </div>
+                <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+
+            <!-- Ejercicios (Destacado) -->
+            <a href="ejercicios.html" class="menu-btn btn-featured">
+                <div class="btn-content">
+                    <div class="btn-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    </div>
+                    <span>Ejercicios</span>
+                </div>
+                <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+        </nav>
+
+        <!-- Footer info -->
+        <footer>
+            <p>Plataforma de Aprendizaje Interactiva</p>
+        </footer>
+    </main>
+
+</body>
+</html>

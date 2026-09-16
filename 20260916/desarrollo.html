@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esquema de Clase: SQL & Funciones de Agregación</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #E0F2F1;          /* Verde Agua Claro Base */
+            --bg-card: #FFFFFF;          /* Blanco Puro para Tarjetas */
+            --bg-card-alt: #F2FAF9;      /* Verde Agua Ultra Suave */
+            --border-teal: #B2DFDB;      /* Borde Verde Agua */
+            --border-teal-accent: #80CBC4;
+            --text-dark: #004D40;        /* Verde Oscuro Profundo para Texto */
+            --text-muted: #1B5E20;       /* Texto Secundario */
+            --teal-primary: #00897B;     /* Verde Agua Principal */
+            --teal-dark: #00695C;        /* Verde Agua Oscuro */
+            --teal-light: #E0F2F1;
+            --badge-bg: #E0F2F1;
+            --badge-text: #00695C;
+            --sql-dark: #0D282E;
+            --sql-teal: #00E6C3;
+            --shadow: 0 4px 20px -2px rgba(0, 105, 92, 0.08), 0 2px 6px -1px rgba(0, 105, 92, 0.04);
+            --radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            line-height: 1.6;
+            padding: 30px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            background: var(--bg-card);
+            border: 1px solid var(--border-teal);
+            border-radius: var(--radius);
+            padding: 28px 32px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-title h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--teal-dark);
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-title p {
+            font-size: 0.95rem;
+            color: #00796B;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        .time-badge {
+            background-color: var(--teal-primary);
+            color: #FFFFFF;
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0, 137, 123, 0.25);
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px 12px 42px;
+            border-radius: 12px;
+            border: 1px solid var(--border-teal-accent);
+            background: var(--bg-card);
+            color: var(--text-dark);
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-box input:focus {
+            border-color: var(--teal-primary);
+            box-shadow: 0 0 0 3px rgba(0, 137, 123, 0.15);
+        }
+
+        .search-box svg {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            fill: var(--teal-primary);
+            width: 18px;
+            height: 18px;
+        }
+
+        .btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-teal-accent);
+            color: var(--teal-dark);
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            background: var(--teal-primary);
+            color: #FFFFFF;
+            border-color: var(--teal-primary);
+        }
+
+        /* Timeline Tree Container */
+        .timeline {
+            position: relative;
+            padding-left: 28px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 20px;
+            bottom: 20px;
+            width: 3px;
+            background: linear-gradient(to bottom, var(--teal-primary), var(--border-teal-accent));
+            border-radius: 2px;
+        }
+
+        /* Block Section */
+        .block-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-teal);
+            border-radius: var(--radius);
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .block-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -4px rgba(0, 105, 92, 0.12);
+        }
+
+        .block-card::before {
+            content: '';
+            position: absolute;
+            left: -28px;
+            top: 24px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--teal-primary);
+            border: 3px solid var(--bg-main);
+            box-shadow: 0 0 0 2px var(--teal-primary);
+            z-index: 2;
+        }
+
+        .block-header {
+            padding: 20px 24px;
+            background: var(--bg-card-alt);
+            border-bottom: 1px solid var(--border-teal);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .block-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .block-number {
+            background: var(--teal-primary);
+            color: #FFFFFF;
+            font-size: 0.8rem;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 8px;
+        }
+
+        .block-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--teal-dark);
+        }
+
+        .block-time {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--teal-primary);
+            background: rgba(0, 137, 123, 0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        /* Sub-items Grid */
+        .block-content {
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .sub-node {
+            background: #FFFFFF;
+            border: 1px solid #E0F2F1;
+            border-left: 4px solid var(--teal-primary);
+            border-radius: 12px;
+            padding: 18px 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        }
+
+        .sub-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .sub-time {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #00796B;
+            background: #E0F2F1;
+            padding: 3px 10px;
+            border-radius: 6px;
+        }
+
+        .sub-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .section-label {
+            font-size: 0.73rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 800;
+            color: var(--teal-primary);
+            margin-top: 10px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .concept-text {
+            font-size: 0.93rem;
+            color: #004D40;
+            margin-bottom: 12px;
+            background: #F9FDFD;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid #E0F2F1;
+        }
+
+        /* Keyword Pills */
+        .keywords-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 4px;
+            margin-bottom: 8px;
+        }
+
+        .kw-pill {
+            font-size: 0.82rem;
+            background: #E0F2F1;
+            color: var(--teal-dark);
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-teal);
+            font-weight: 600;
+        }
+
+        .sql-box {
+            background: var(--sql-dark);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-top: 6px;
+            margin-bottom: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .kw-sql {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            background: rgba(0, 230, 195, 0.12);
+            color: var(--sql-teal);
+            border: 1px solid rgba(0, 230, 195, 0.3);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            body {
+                padding: 16px 12px;
+            }
+            header {
+                padding: 20px;
+            }
+            .block-header {
+                padding: 16px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .timeline {
+                padding-left: 20px;
+            }
+            .block-card::before {
+                left: -20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header -->
+    <header>
+        <div class="header-title">
+            <h1>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                Esquema de Conceptos y Palabras Clave SQL
+            </h1>
+            <p>Planificación de Clase — Consultas SQL & Funciones de Agregación</p>
+        </div>
+        <div class="time-badge">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            180 Minutos Totales
+        </div>
+    </header>
+
+    <!-- Interactive Controls -->
+    <div class="controls">
+        <div class="search-box">
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <input type="text" id="searchInput" placeholder="Buscar concepto o comando SQL (ej: COUNT, AVG, WHERE, NULL)..." onkeyup="filterTree()">
+        </div>
+        <button class="btn" onclick="toggleAll(true)">Expandir Todo</button>
+        <button class="btn" onclick="toggleAll(false)">Colapsar Todo</button>
+    </div>
+
+    <!-- Timeline Body -->
+    <div class="timeline" id="timelineTree">
+
+        <!-- BLOQUE 1 -->
+        <div class="block-card">
+            <div class="block-header" onclick="toggleBlock(this)">
+                <div class="block-title-group">
+                    <span class="block-number">B1</span>
+                    <span class="block-title">Inicio y Motivación</span>
+                </div>
+                <span class="block-time">0 - 30 min</span>
+            </div>
+            <div class="block-content">
+                <div class="sub-node">
+                    <div class="sub-header">
+                        <span class="sub-title">Pregunta disparadora / Desafío inicial</span>
+                        <span class="sub-time">0 - 10 min</span>
+                    </div>
+                    <div class="section-label">📌 Concepto Central</div>
+                    <div class="concept-text">Diferencia entre la selección individual de registros vs. condensación global de datos para obtener indicadores únicos.</div>
+                    
+                    <div class="section-label">⚡ Palabras clave en SQL que se necesitan conocer</div>
+                    <div class="sql-box">
+                        <span class="kw-sql">SELECT</span>
+                        <span class="kw-sql">WHERE</span>
+                    </div>
+
+                    <div class="section-label">🏷️ Conceptos y términos pedagógicos</div>
+                    <div class="keywords-container">
+                        <span class="kw-pill">lista de filas</span>
+                        <span class="kw-pill">promedio general</span>
+                        <span class="kw-pill">valor representativo</span>
+                        <span class="kw-pill">total de alumnos</span>
+                    </div>
+                </div>
+
+                <div class="sub-node">
+                    <div class="sub-header">
+                        <span class="sub-title">Vocabulario autómata</span>
+                        <span class="sub-time">10 - 30 min</span>
+                    </div>
+                    <div class="section-label">📌 Concepto Central</div>
+                    <div class="concept-text">Abstracción e inducción de operaciones de agregación mediante pseudocódigo autómata en español.</div>
+                    
+                    <div class="section-label">⚡ Palabras clave en SQL que se necesitan conocer (Equivalencia Formal)</div>
+                    <div class="sql-box">
+                        <span class="kw-sql">COUNT()</span>
+                        <span class="kw-sql">SUM()</span>
+                        <span class="kw-sql">AVG()</span>
+                        <span class="kw-sql">MAX()</span>
+                        <span class="kw-sql">MIN()</span>
+                    </div>
+
+                    <div class="section-label">🏷️ Vocabulario Autómata (Español)</div>
+                    <div class="keywords-container">
+                        <span class="kw-pill">TRAEME</span>
+                        <span class="kw-pill">DESDE</span>
+                        <span class="kw-pill">DONDE</span>
+                        <span class="kw-pill">CONTAME</span>
+                        <span class="kw-pill">SUMAME</span>
+                        <span class="kw-pill">PROMEDIAME</span>
+                        <span class="kw-pill">MAYOR</span>
+                        <span class="kw-pill">MENOR</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BLOQUE 2 -->
+        <div class="block-card">
+            <div class="block-header" onclick="toggleBlock(this)">
+                <div class="block-title-group">
+                    <span class="block-number">B2</span>
+                    <span class="block-title">Experiencia e Inducción mediante Juego de Roles</span>
+                </div>
+                <span class="block-time">30 - 80 min</span>
+            </div>
+            <div class="block-content">
+                <div class="sub-node">
+                    <div class="sub-header">
+                        <span class="sub-title">Dinámica del Autómata</span>
+                        <span class="sub-time">30 - 60 min</span>
+                    </div>
+                    <div class="section-label">📌 Concepto Central</div>
+                    <div class="concept-text">Procesamiento paso a paso, filtrado previo y reducción vertical de tablas completas a un único valor numérico.</div>
+                    
+                    <div class="section-label">⚡ Palabras clave en SQL que se necesitan conocer</div>
+                    <div class="sql-box">
+                        <span class="kw-sql">COUNT(*)</span>
+                        <span class="kw-sql">FROM</span>
+                        <span class="kw-sql">WHERE</span>
+                        <span class="kw-sql">&gt;=</span>
+                    </div>
+
+                    <div class="section-label">🏷️ Conceptos y términos pedagógicos</div>
+                    <div class="keywords-container">
+                        <span class="kw-pill">Tabla Estudiantes</span>
+                        <span class="kw-pill">Diseñador de Instrucciones</span>
+                        <span class="kw-pill">Autómata procesador</span>
+                        <span class="kw-pill">condensar filas</span>
+                        <span class="kw-pill">resultado único</span>
+                    </div>
+                </div>
+
+                <div class="sub-node">
+                    <div class="sub-header">
+                        <span class="sub-title">Preguntas orientadoras y andamiaje</span>
+                        <span class="sub-time">60 - 80 min</span>
+                    </div>
+                    <div class="section-label">📌 Concepto Central</div>
+                    <div class="concept-text">Restricciones de dominios de datos (numéricos vs. texto) y orden de evaluación lógica durante la ejecución del filtro.</div>
+                    
+                    <div class="section-label">⚡ Palabras clave en SQL que se necesitan conocer</div>
+                    <div class="sql-box">
+                        <span class="kw-sql">AVG(columna_numerica)</span>
+                        <span class="kw-sql">MAX(columna)</span>
+                        <span class="kw-sql">WHERE</span>
+                    </div>
+
+                    <div class="section-label">🏷️ Conceptos y términos pedagógicos</div>
+                    <div class="keywords-container">
+                        <span class="kw-pill">columna numérica</span>
+                        <span class="kw-pill">tipo de dato</span>
+                        <span class="kw-pill">orden de operaciones</span>
+                        <span class="kw-pill">filtrado específico</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BLOQUE 3 -->
+        <div class="block-card">
+            <div class="block-header" onclick="toggleBlock(this)">
+                <div class="block-title-group">
+                    <span class="block-number">B3</span>
+                    <span class="block-title">Formalización a Sintaxis MySQL</span>
+                </div>
+                <span class="block-time">80 - 110 min</span>
+            </div>
+            <div class="block-content">
+                <div class="sub-node">
+                    <div class="sub-header">
+                        <span class="sub-title">Transposición guiada</span>
+                        <span class="sub-time">80 - 95 min</span>
+                    </div>
+                    <div class="section-label">📌 Concepto Central</div>
+                    <div class="concept-text">Lectura, deducción e interpretación de la sintaxis SQL formal frente al pseudocódigo.</div>
+                    
+                    <div class="section-label">⚡ Palabras clave en SQL que se necesitan conocer</div>
+                    <div class="sql-box">
+                        <span class="kw-sql">SELECT</span>
+                        <span class="kw-sql">AVG()</span>
+                        <span class="kw-sql">AS (Alias)</span>
+                        <span class="kw-sql">FROM</span>
+                        <span class="kw-sql">WHERE</span>
+                    </div>
+
+                    <div class="section-label">🏷️ Conceptos y términos pedagógicos</div>
+                    <div class="keywords-container">
+                        <span class="kw-pill">sintaxis formal</span>
+                        <span class="kw-pill">deducción guiada</span>
+                        <span class="kw-pill">promedio_general</span>
+                        <span class="kw-pill">renombrado de columna</span>
+                    </div>
+                </div>
+
+                <div class="sub-node">
+                    <div class="sub-header">
+                        <span class="sub-title">Transposición formal y reglas de comodines</span>
+                        <span class="sub-time">95 - 110 min</span>
+                    </div>
+                    <div class="section-label">📌 Concepto Central</div>
+                    <div class="concept-text">Mapeo sintáctico directo y diferencia crucial de comportamiento frente a valores nulos (NULL) entre COUNT(*) y el resto de funciones.</div>
+                    
+                    <div class="section-label">⚡ Palabras clave en SQL que se necesitan conocer</div>
+                    <div class="sql-box">
+                        <span class="kw-sql">COUNT(*)</span>
+                        <span class="kw-sql">COUNT(atributo)</span>
+                        <span class="kw-sql">SUM(atributo)</span>
+                        <span class="kw-sql">AVG(atributo)</span>
+                        <span class="kw-sql">MAX(atributo)</span>
+                        <span class="kw-sql">MIN(atributo)</span>
+                        <span class="kw-sql">NULL</span>
+                    </div>
+
+                    <div class="section-label">🏷️ Conceptos y términos pedagógicos</div>
+                    <div class="keywords-container">
+                        <span class="kw-pill">comodín *</span>
+                        <span class="kw-pill">evaluación de tuplas</span>
+                        <span class="kw-pill">dominio de atributo</span>
+                        <span class="kw-pill">ignorar NULLs</span>
+                        <span class="kw-pill">registros válidos</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BLOQUE 4 -->
+        <div class="block-card">
+            <div class="block-header" onclick="toggleBlock(this)">
+                <div class="block-title-group">
+                    <span class="block-number">B4</span>
+                    <span class="block-title">Ejercitación Individual y Trabajo Autónomo</span>
+                </div>
+                <span class="block-time">110 - 150 min</span>
+            </div>
+            <div class="block-content">
+                <div class="sub-node">
+                    <div class="sub-header">
+                        <span class="sub-title">Consignas prácticas en cuaderno</span>
+                        <span class="sub-time">110 - 135 min</span>
+                    </div>
+                    <div class="section-label">📌 Concepto Central</div>
+                    <div class="concept-text">Aplicación autónoma de funciones de agregación en la resolución de problemas situados reales.</div>
+                    
+                    <div class="section-label">⚡ Palabras clave en SQL que se necesitan conocer</div>
+                    <div class="sql-box">
+                        <span class="kw-sql">SUM(cuotas)</span>
+                        <span class="kw-sql">MAX(nota)</span>
+                        <span class="kw-sql">COUNT(estudiantes)</span>
+                        <span class="kw-sql">SELECT</span>
+                        <span class="kw-sql">FROM</span>
+                    </div>
+
+                    <div class="section-label">🏷️ Conceptos y términos pedagógicos</div>
+                    <div class="keywords-container">
+                        <span class="kw-pill">problemas situados</span>
+                        <span class="kw-pill">total acumulado</span>
+                        <span class="kw-pill">nota máxima</span>
+                        <span class="kw-pill">conteo de inscriptos</span>
+                        <span class="kw-pill">consulta entre pares</span>
+                    </div>
+                </div>
+
+                <div class="sub-node">
+                    <div class="sub-header">
+                        <span class="sub-title">Monitoreo y atención a la diversidad</span>
+                        <span class="sub-time">135 - 150 min</span>
+                    </div>
+                    <div class="section-label">📌 Concepto Central</div>
+                    <div class="concept-text">Andamiaje individualizado docente guiando mediante la indagación dialógica sin dar la respuesta directa.</div>
+                    
+                    <div class="section-label">⚡ Palabras clave en SQL que se necesitan conocer</div>
+                    <div class="sql-box">
+                        <span class="kw-sql">WHERE</span>
+                        <span class="kw-sql">COUNT()</span>
+                        <span class="kw-sql">AVG()</span>
+                    </div>
+
+                    <div class="section-label">🏷️ Conceptos y términos pedagógicos</div>
+                    <div class="keywords-container">
+                        <span class="kw-pill">repreguntas</span>
+                        <span class="kw-pill">orientación dialógica</span>
+                        <span class="kw-pill">pensamiento autónomo</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BLOQUE 5 -->
+        <div class="block-card">
+            <div class="block-header" onclick="toggleBlock(this)">
+                <div class="block-title-group">
+                    <span class="block-number">B5</span>
+                    <span class="block-title">Puesta en Común y Validación Colectiva</span>
+                </div>
+                <span class="block-time">150 - 180 min</span>
+            </div>
+            <div class="block-content">
+                <div class="sub-node">
+                    <div class="sub-header">
+                        <span class="sub-title">Puesta en común y corrección</span>
+                        <span class="sub-time">150 - 180 min</span>
+                    </div>
+                    <div class="section-label">📌 Concepto Central</div>
+                    <div class="concept-text">Depuración colectiva de código y validación colaborativa de reglas semánticas y sintácticas en el pizarrón.</div>
+                    
+                    <div class="section-label">⚡ Palabras clave en SQL que se necesitan conocer</div>
+                    <div class="sql-box">
+                        <span class="kw-sql">SELECT</span>
+                        <span class="kw-sql">FROM</span>
+                        <span class="kw-sql">WHERE</span>
+                        <span class="kw-sql">COUNT()</span>
+                        <span class="kw-sql">SUM()</span>
+                        <span class="kw-sql">AVG()</span>
+                        <span class="kw-sql">MAX()</span>
+                        <span class="kw-sql">MIN()</span>
+                    </div>
+
+                    <div class="section-label">🏷️ Conceptos y términos pedagógicos</div>
+                    <div class="keywords-container">
+                        <span class="kw-pill">escritura en pizarrón</span>
+                        <span class="kw-pill">errores sintácticos</span>
+                        <span class="kw-pill">errores semánticos</span>
+                        <span class="kw-pill">orden de cláusulas</span>
+                        <span class="kw-pill">validación grupal</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CIERRE Y EVALUACIÓN -->
+        <div class="block-card">
+            <div class="block-header" onclick="toggleBlock(this)">
+                <div class="block-title-group">
+                    <span class="block-number" style="background:#00695C;">C</span>
+                    <span class="block-title">Cierre y Evaluación Metacognitiva</span>
+                </div>
+                <span class="block-time">Cierre de clase</span>
+            </div>
+            <div class="block-content">
+                <div class="sub-node">
+                    <div class="sub-header">
+                        <span class="sub-title">Síntesis docente explícita</span>
+                        <span class="sub-time">5 min</span>
+                    </div>
+                    <div class="section-label">📌 Concepto Central</div>
+                    <div class="concept-text">Distinción categórica entre el filtrado horizontal de filas y el cálculo vertical de resúmenes agregados.</div>
+                    
+                    <div class="section-label">⚡ Palabras clave en SQL que se necesitan conocer</div>
+                    <div class="sql-box">
+                        <span class="kw-sql">WHERE (Filtrado Horizontal)</span>
+                        <span class="kw-sql">COUNT / SUM / AVG / MAX / MIN (Cálculo Vertical)</span>
+                    </div>
+
+                    <div class="section-label">🏷️ Conceptos y términos pedagógicos</div>
+                    <div class="keywords-container">
+                        <span class="kw-pill">dimensión horizontal</span>
+                        <span class="kw-pill">dimensión vertical</span>
+                        <span class="kw-pill">condensar datos</span>
+                        <span class="kw-pill">síntesis conceptual</span>
+                    </div>
+                </div>
+
+                <div class="sub-node">
+                    <div class="sub-header">
+                        <span class="sub-title">Preguntas abiertas y reflexión metacognitiva</span>
+                        <span class="sub-time">15 min</span>
+                    </div>
+                    <div class="section-label">📌 Concepto Central</div>
+                    <div class="concept-text">Metacognición, reconocimiento de pistas en problemas del mundo real y toma de conciencia del proceso mental de traducción a SQL.</div>
+                    
+                    <div class="section-label">⚡ Palabras clave en SQL que se necesitan conocer</div>
+                    <div class="sql-box">
+                        <span class="kw-sql">SELECT simples vs. Funciones de Agregación</span>
+                    </div>
+
+                    <div class="section-label">🏷️ Conceptos y términos pedagógicos</div>
+                    <div class="keywords-container">
+                        <span class="kw-pill">pistas en el enunciado</span>
+                        <span class="kw-pill">proceso mental</span>
+                        <span class="kw-pill">traducción a SQL</span>
+                        <span class="kw-pill">autoevaluación</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function toggleBlock(headerElem) {
+        const content = headerElem.nextElementSibling;
+        if (content.style.display === "none") {
+            content.style.display = "flex";
+            headerElem.style.opacity = "1";
+        } else {
+            content.style.display = "none";
+            headerElem.style.opacity = "0.85";
+        }
+    }
+
+    function toggleAll(expand) {
+        const contents = document.querySelectorAll('.block-content');
+        contents.forEach(content => {
+            content.style.display = expand ? 'flex' : 'none';
+        });
+    }
+
+    function filterTree() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        const blockCards = document.querySelectorAll('.block-card');
+
+        blockCards.forEach(card => {
+            const text = card.innerText.toLowerCase();
+            const content = card.querySelector('.block-content');
+
+            if (query === "") {
+                card.style.display = "block";
+                content.style.display = "flex";
+            } else if (text.includes(query)) {
+                card.style.display = "block";
+                content.style.display = "flex";
+            } else {
+                card.style.display = "none";
+            }
+        });
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego Educativo en Tiempo Real</title>
+  
+  <!-- ESTILOS (CSS) -->
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      text-align: center;
+      background-color: #f4f7f6;
+    }
+    .screen {
+      display: none;
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .screen.active {
+      display: block;
+    }
+    input, button {
+      padding: 12px;
+      margin: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      background: #e9ecef;
+      margin: 5px auto;
+      padding: 10px;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PANTALLA 1: INICIO DE SESIÓN -->
+  <div id="screen-login" class="screen active">
+    <h2>Ingreso al Juego</h2>
+    <p>Escribe el nombre de tu equipo (o la palabra clave si eres moderador):</p>
+    <input type="text" id="team-name" placeholder="Ej: Los Binarios">
+    <br>
+    <button onclick="login()">Ingresar</button>
+  </div>
+
+  <!-- PANTALLA 2: SALA DE ESPERA (JUGADORES) -->
+  <div id="screen-waiting" class="screen">
+    <h2>¡Conectado exitosamente!</h2>
+    <p>Por favor espera a que el moderador inicie la partida...</p>
+  </div>
+
+  <!-- PANTALLA 3: PANEL DEL MODERADOR -->
+  <div id="screen-moderator" class="screen">
+    <h2>Panel del Moderador</h2>
+    <h3>Equipos Conectados en Tiempo Real:</h3>
+    <ul id="teams-list"></ul>
+    <button onclick="modStartGame()">Iniciar Juego para Todos</button>
+    <button onclick="modResetGame()" style="background-color: #dc3545;">Reiniciar Partida</button>
+  </div>
+
+  <!-- PANTALLA 4: PANTALLA DEL JUEGO -->
+  <div id="screen-game" class="screen">
+    <h2>¡El juego ha comenzado!</h2>
+    <p>Área de juego activa para los participantes.</p>
+  </div>
+
+  <!-- LIBRERÍAS DE FIREBASE -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+  <!-- LÓGICA DEL JUEGO (JAVASCRIPT) -->
+  <script>
+    // ==========================================
+    // 1. CONFIGURACIÓN DE FIREBASE
+    // Reemplaza los valores de abajo por tus claves de Firebase
+    // ==========================================
+    const firebaseConfig = {
+      apiKey: "TU_API_KEY",
+      authDomain: "tu-proyecto.firebaseapp.com",
+      databaseURL: "https://tu-proyecto-default-rtdb.firebaseio.com",
+      projectId: "tu-proyecto",
+      storageBucket: "tu-proyecto.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "1:123456789:web:abcdef"
+    };
+
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Variables de estado
+    let myTeamName = '';
+    let isModerator = false;
+
+    // ==========================================
+    // 2. NAVEGACIÓN ENTRE PANTALLAS
+    // ==========================================
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+      });
+      const targetScreen = document.getElementById(screenId);
+      if (targetScreen) {
+        targetScreen.classList.add('active');
+      }
+    }
+
+    // ==========================================
+    // 3. INGRESO (LOGIN)
+    // ==========================================
+    function login() {
+      const teamInput = document.getElementById('team-name').value.trim();
+      if (!teamInput) {
+        alert('Por favor ingresa un nombre.');
+        return;
+      }
+
+      myTeamName = teamInput;
+      isModerator = (myTeamName.toLowerCase() === 'gtg');
+
+      if (isModerator) {
+        showScreen('screen-moderator');
+        listenToTeams();
+      } else {
+        // Registrar equipo en Firebase
+        db.ref('teams/' + myTeamName).set({
+          name: myTeamName,
+          joinedAt: Date.now()
+        });
+
+        broadcast('NEW_TEAM', { teamName: myTeamName });
+        showScreen('screen-waiting');
+      }
+    }
+
+    // ==========================================
+    // 4. TIEMPO REAL CON FIREBASE
+    // ==========================================
+    function broadcast(type, data = {}) {
+      db.ref('game_state').set({
+        type: type,
+        data: data,
+        timestamp: Date.now()
+      });
+    }
+
+    // Escuchar eventos globales (Iniciar o Reiniciar juego)
+    db.ref('game_state').on('value', (snapshot) => {
+      const state = snapshot.val();
+      if (!state) return;
+
+      const { type } = state;
+
+      if (type === 'RESET_GAME') {
+        resetGameLocal();
+      } else if (type === 'START_GAME') {
+        startGameLocal();
+      }
+    });
+
+    // Escuchar la lista de equipos conectados
+    function listenToTeams() {
+      db.ref('teams').on('value', (snapshot) => {
+        const teams = snapshot.val() || {};
+        const listElement = document.getElementById('teams-list');
+        if (!listElement) return;
+
+        listElement.innerHTML = '';
+        Object.keys(teams).forEach(teamName => {
+          const li = document.createElement('li');
+          li.textContent = teamName;
+          listElement.appendChild(li);
+        });
+      });
+    }
+
+    // ==========================================
+    // 5. ACCIONES DEL MODERADOR Y JUGADORES
+    // ==========================================
+    function modStartGame() {
+      broadcast('START_GAME');
+    }
+
+    function modResetGame() {
+      db.ref('teams').remove();
+      broadcast('RESET_GAME');
+    }
+
+    function startGameLocal() {
+      showScreen('screen-game');
+    }
+
+    function resetGameLocal() {
+      myTeamName = '';
+      isModerator = false;
+      document.getElementById('team-name').value = '';
+      showScreen('screen-login');
+    }
+  </script>
+</body>
+</html>

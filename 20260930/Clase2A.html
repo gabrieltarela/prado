@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emparejamiento de Tarjetas y Diagramas de Venn - Base de Datos</title>
+  <!-- Fuente pastel y redondeada -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-pastel: #F8F9FA;
+      --card-bg: #FFFFFF;
+      --text-main: #334155;
+      
+      /* Colores Pastel */
+      --blue-pastel-bg: #E0F2FE;
+      --blue-pastel-border: #BAE6FD;
+      --blue-pastel-text: #0369A1;
+      
+      --green-pastel-bg: #DCFCE7;
+      --green-pastel-border: #BBF7D0;
+      --green-pastel-text: #15803D;
+      
+      --null-pastel-bg: #FFE4E6;
+      --null-pastel-border: #FECDD3;
+      --null-pastel-text: #BE123C;
+
+      --purple-pastel-bg: #F3E8FF;
+      --purple-pastel-border: #E9D5FF;
+      --purple-pastel-text: #6B21A8;
+
+      --yellow-pastel-bg: #FEF9C3;
+      --yellow-pastel-border: #FEF08A;
+      --yellow-pastel-text: #854D0E;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Quicksand', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-pastel);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Barra Superior de Progreso */
+    header {
+      background-color: #FFFFFF;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #F1F5F9;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    }
+
+    .title-tag {
+      background-color: var(--purple-pastel-bg);
+      color: var(--purple-pastel-text);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border: 1px solid var(--purple-pastel-border);
+    }
+
+    .progress-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .progress-bar-bg {
+      width: 220px;
+      height: 10px;
+      background-color: #E2E8F0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 7.14%;
+      background: linear-gradient(90deg, #38BDF8, #A855F7, #4ADE80);
+      transition: width 0.3s ease;
+      border-radius: 10px;
+    }
+
+    .slide-counter {
+      font-weight: 700;
+      color: #64748B;
+      font-size: 0.9rem;
+    }
+
+    /* Contenedor de Diapositivas */
+    main {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      transform: translateX(30px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+
+    /* Diapositiva de Requerimiento / Consigna */
+    .statement-container {
+      margin: auto;
+      max-width: 850px;
+      background: var(--card-bg);
+      padding: 56px 48px;
+      border-radius: 28px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      border: 3px dashed var(--purple-pastel-border);
+      text-align: center;
+    }
+
+    .badge-icon {
+      font-size: 3.8rem;
+      margin-bottom: 20px;
+      display: inline-block;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .statement-title {
+      font-size: 1.2rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #64748B;
+      margin-bottom: 16px;
+      font-weight: 700;
+    }
+
+    .statement-text {
+      font-size: 2.1rem;
+      color: #1E293B;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .statement-text span {
+      color: var(--blue-pastel-text);
+      background-color: var(--blue-pastel-bg);
+      padding: 2px 12px;
+      border-radius: 10px;
+    }
+
+    /* Diapositiva de 3 Paneles (Soluci車n) */
+    .solution-header {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .solution-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1E293B;
+    }
+
+    .panels-container {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr 1fr;
+      gap: 16px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .panel {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+      border: 2px solid #F1F5F9;
+      overflow-y: auto;
+    }
+
+    .panel-header {
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 10px 14px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .badge-square {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    .badge-blue { background-color: #38BDF8; }
+    .badge-green { background-color: #4ADE80; }
+
+    .panel-left .panel-header {
+      background-color: var(--blue-pastel-bg);
+      color: var(--blue-pastel-text);
+      border: 1px solid var(--blue-pastel-border);
+    }
+
+    .panel-right .panel-header {
+      background-color: var(--green-pastel-bg);
+      color: var(--green-pastel-text);
+      border: 1px solid var(--green-pastel-border);
+    }
+
+    .panel-center .panel-header {
+      background-color: var(--purple-pastel-bg);
+      color: var(--purple-pastel-text);
+      border: 1px solid var(--purple-pastel-border);
+    }
+
+    /* Listas y Tarjetas */
+    .card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .card {
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+      transition: transform 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+    }
+
+    .card-blue {
+      background-color: var(--blue-pastel-bg);
+      border: 1.5px solid var(--blue-pastel-border);
+      color: var(--blue-pastel-text);
+    }
+
+    .card-green {
+      background-color: var(--green-pastel-bg);
+      border: 1.5px solid var(--green-pastel-border);
+      color: var(--green-pastel-text);
+    }
+
+    .card-null {
+      background-color: var(--null-pastel-bg);
+      border: 1.5px dashed var(--null-pastel-border);
+      color: var(--null-pastel-text);
+    }
+
+    /* Parejas del Panel Central */
+    .pair-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 6px;
+      background-color: #F8FAFC;
+      padding: 8px;
+      border-radius: 14px;
+      border: 1px solid #E2E8F0;
+    }
+
+    .link-icon {
+      color: #94A3B8;
+      font-weight: bold;
+      font-size: 0.8rem;
+    }
+
+    /* Estado de Panel Vac赤o */
+    .empty-panel-msg {
+      margin: auto;
+      text-align: center;
+      color: #94A3B8;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 24px 12px;
+      border: 2px dashed #E2E8F0;
+      border-radius: 14px;
+      background-color: #F8FAFC;
+    }
+
+    /* Contenedor de Diagramas de Venn */
+    .venn-container {
+      margin: auto;
+      max-width: 900px;
+      width: 100%;
+      background: var(--card-bg);
+      padding: 32px 40px;
+      border-radius: 28px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      border: 2px solid #F1F5F9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .venn-svg-wrapper {
+      width: 100%;
+      max-width: 520px;
+      margin: 20px 0;
+    }
+
+    .venn-caption {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #334155;
+      background-color: #F8FAFC;
+      padding: 12px 24px;
+      border-radius: 16px;
+      border: 1px solid #E2E8F0;
+      margin-top: 10px;
+    }
+
+    /* Diapositiva de Conclusiones */
+    .conclusions-container {
+      margin: auto;
+      max-width: 900px;
+      width: 100%;
+      background: var(--card-bg);
+      padding: 40px;
+      border-radius: 28px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      border: 2px solid #F1F5F9;
+    }
+
+    .conclusions-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--purple-pastel-text);
+      margin-bottom: 24px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .questions-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .question-card {
+      background-color: #F8FAFC;
+      padding: 20px 24px;
+      border-radius: 18px;
+      border-left: 5px solid var(--purple-pastel-border);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+      transition: transform 0.2s;
+    }
+
+    .question-card:hover {
+      transform: translateY(-3px);
+      background-color: #FFFFFF;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .question-number {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #94A3B8;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .question-text {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1E293B;
+      line-height: 1.4;
+    }
+
+    /* Controles de Navegaci車n */
+    footer {
+      background-color: #FFFFFF;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 2px solid #F1F5F9;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 14px;
+      border: none;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-prev {
+      background-color: #F1F5F9;
+      color: #475569;
+    }
+
+    .btn-prev:hover:not(:disabled) {
+      background-color: #E2E8F0;
+    }
+
+    .btn-next {
+      background-color: #38BDF8;
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+    }
+
+    .btn-next:hover:not(:disabled) {
+      background-color: #0284C7;
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .keyboard-hint {
+      font-size: 0.85rem;
+      color: #94A3B8;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header / Progreso -->
+  <header>
+    <div class="title-tag">UTU - Bases de Datos (Clase 2)</div>
+    <div class="progress-container">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressFill"></div>
+      </div>
+      <span class="slide-counter" id="slideCounter">Diapositiva 1 de 14</span>
+    </div>
+  </header>
+
+  <!-- Contenedor Principal de Diapositivas -->
+  <main>
+
+    <!-- DIAPOSITIVA 1: Consigna 1 -->
+    <div class="slide active">
+      <div class="statement-container">
+        <div class="badge-icon">&#128203;</div>
+        <div class="statement-title">Requerimiento 1 de Adscripci&oacute;n</div>
+        <div class="statement-text">
+          "La adscripci&oacute;n solicita un listado de los <span>estudiantes que cursan asignaturas</span>"
+        </div>
+      </div>
+    </div>
+
+    <!-- DIAPOSITIVA 2: Soluci車n 1 -->
+    <div class="slide">
+      <div class="solution-header">
+        <div class="solution-title">Soluci&oacute;n 1: Estudiantes con Asignaturas Asignadas</div>
+      </div>
+      <div class="panels-container">
+        <div class="panel panel-left">
+          <div class="panel-header"><span class="badge-square badge-blue"></span> Estudiantes (Sin asignar)</div>
+          <div class="card-list">
+            <div class="card card-blue"><span>5 | Sof&iacute;a</span> <span>(-)</span></div>
+            <div class="card card-blue"><span>6 | Diego</span> <span>(-)</span></div>
+          </div>
+        </div>
+
+        <div class="panel panel-center">
+          <div class="panel-header">&#10024; Resultado Adscripci&oacute;n</div>
+          <div class="card-list">
+            <div class="pair-row">
+              <div class="card card-blue">Ana</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-green">Bases de Datos</div>
+            </div>
+            <div class="pair-row">
+              <div class="card card-blue">Carlos</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-green">Programaci&oacute;n</div>
+            </div>
+            <div class="pair-row">
+              <div class="card card-blue">Luc&iacute;a</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-green">Bases de Datos</div>
+            </div>
+            <div class="pair-row">
+              <div class="card card-blue">Mateo</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-green">Redes</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel panel-right">
+          <div class="panel-header"><span class="badge-square badge-green"></span> Asignaturas (Sin asignar)</div>
+          <div class="card-list">
+            <div class="card card-green"><span>104</span> <span>Sistemas Operativos</span></div>
+            <div class="card card-green"><span>105</span> <span>Matem&aacute;tica</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIAPOSITIVA 3: Consigna 2 -->
+    <div class="slide">
+      <div class="statement-container">
+        <div class="badge-icon">&#128587;</div>
+        <div class="statement-title">Requerimiento 2 de Adscripci&oacute;n</div>
+        <div class="statement-text">
+          "La adscripci&oacute;n solicita listado de <span>TODOS los estudiantes</span> con su asignatura correspondiente"
+        </div>
+      </div>
+    </div>
+
+    <!-- DIAPOSITIVA 4: Soluci車n 2 -->
+    <div class="slide">
+      <div class="solution-header">
+        <div class="solution-title">Soluci&oacute;n 2: TODOS los Estudiantes con su Asignatura</div>
+      </div>
+      <div class="panels-container">
+        <div class="panel panel-left">
+          <div class="panel-header"><span class="badge-square badge-blue"></span> Estudiantes (Sin asignar)</div>
+          <div class="empty-panel-msg">
+            &#9989; Todas las tarjetas de estudiantes pasaron al panel central
+          </div>
+        </div>
+
+        <div class="panel panel-center">
+          <div class="panel-header">&#10024; Resultado Adscripci&oacute;n</div>
+          <div class="card-list">
+            <div class="pair-row">
+              <div class="card card-blue">Ana</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-green">Bases de Datos</div>
+            </div>
+            <div class="pair-row">
+              <div class="card card-blue">Carlos</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-green">Programaci&oacute;n</div>
+            </div>
+            <div class="pair-row">
+              <div class="card card-blue">Luc&iacute;a</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-green">Bases de Datos</div>
+            </div>
+            <div class="pair-row">
+              <div class="card card-blue">Mateo</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-green">Redes</div>
+            </div>
+            <div class="pair-row">
+              <div class="card card-blue">Sof&iacute;a</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-null">NULL</div>
+            </div>
+            <div class="pair-row">
+              <div class="card card-blue">Diego</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-null">NULL</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel panel-right">
+          <div class="panel-header"><span class="badge-square badge-green"></span> Asignaturas (Sin asignar)</div>
+          <div class="card-list">
+            <div class="card card-green"><span>104</span> <span>Sistemas Operativos</span></div>
+            <div class="card card-green"><span>105</span> <span>Matem&aacute;tica</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIAPOSITIVA 5: Consigna 3 -->
+    <div class="slide">
+      <div class="statement-container">
+        <div class="badge-icon">&#128218;</div>
+        <div class="statement-title">Requerimiento 3 de Adscripci&oacute;n</div>
+        <div class="statement-text">
+          "La adscripci&oacute;n solicita listado de <span>TODAS las asignaturas</span> con su estudiante correspondiente"
+        </div>
+      </div>
+    </div>
+
+    <!-- DIAPOSITIVA 6: Soluci車n 3 -->
+    <div class="slide">
+      <div class="solution-header">
+        <div class="solution-title">Soluci&oacute;n 3: TODAS las Asignaturas con su Estudiante</div>
+      </div>
+      <div class="panels-container">
+        <div class="panel panel-left">
+          <div class="panel-header"><span class="badge-square badge-blue"></span> Estudiantes (Sin asignar)</div>
+          <div class="card-list">
+            <div class="card card-blue"><span>5 | Sof&iacute;a</span> <span>(-)</span></div>
+            <div class="card card-blue"><span>6 | Diego</span> <span>(-)</span></div>
+          </div>
+        </div>
+
+        <div class="panel panel-center">
+          <div class="panel-header">&#10024; Resultado Adscripci&oacute;n</div>
+          <div class="card-list">
+            <div class="pair-row">
+              <div class="card card-blue">Ana</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-green">Bases de Datos</div>
+            </div>
+            <div class="pair-row">
+              <div class="card card-blue">Luc&iacute;a</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-green">Bases de Datos</div>
+            </div>
+            <div class="pair-row">
+              <div class="card card-blue">Carlos</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-green">Programaci&oacute;n</div>
+            </div>
+            <div class="pair-row">
+              <div class="card card-blue">Mateo</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-green">Redes</div>
+            </div>
+            <div class="pair-row">
+              <div class="card card-null">NULL</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-green">Sistemas Operativos</div>
+            </div>
+            <div class="pair-row">
+              <div class="card card-null">NULL</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-green">Matem&aacute;tica</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel panel-right">
+          <div class="panel-header"><span class="badge-square badge-green"></span> Asignaturas (Sin asignar)</div>
+          <div class="empty-panel-msg">
+            &#9989; Todas las tarjetas de asignaturas pasaron al panel central
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIAPOSITIVA 7: Consigna 4 -->
+    <div class="slide">
+      <div class="statement-container">
+        <div class="badge-icon">&#127760;</div>
+        <div class="statement-title">Requerimiento 4 de Adscripci&oacute;n</div>
+        <div class="statement-text">
+          "La adscripci&oacute;n solicita listado de <span>TODOS los estudiantes</span> y <span>TODAS las asignaturas</span> con sus correspondencias"
+        </div>
+      </div>
+    </div>
+
+    <!-- DIAPOSITIVA 8: Soluci車n 4 -->
+    <div class="slide">
+      <div class="solution-header">
+        <div class="solution-title">Soluci&oacute;n 4: TODOS los Estudiantes + TODAS las Asignaturas</div>
+      </div>
+      <div class="panels-container">
+        <div class="panel panel-left">
+          <div class="panel-header"><span class="badge-square badge-blue"></span> Estudiantes (Sin asignar)</div>
+          <div class="empty-panel-msg">
+            &#9989; Todas las tarjetas de estudiantes pasaron al panel central
+          </div>
+        </div>
+
+        <div class="panel panel-center">
+          <div class="panel-header">&#10024; Resultado Adscripci&oacute;n</div>
+          <div class="card-list">
+            <div class="pair-row">
+              <div class="card card-blue">Ana</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-green">Bases de Datos</div>
+            </div>
+            <div class="pair-row">
+              <div class="card card-blue">Carlos</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-green">Programaci&oacute;n</div>
+            </div>
+            <div class="pair-row">
+              <div class="card card-blue">Luc&iacute;a</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-green">Bases de Datos</div>
+            </div>
+            <div class="pair-row">
+              <div class="card card-blue">Mateo</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-green">Redes</div>
+            </div>
+            <div class="pair-row">
+              <div class="card card-blue">Sof&iacute;a</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-null">NULL</div>
+            </div>
+            <div class="pair-row">
+              <div class="card card-blue">Diego</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-null">NULL</div>
+            </div>
+            <div class="pair-row">
+              <div class="card card-null">NULL</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-green">Sistemas Operativos</div>
+            </div>
+            <div class="pair-row">
+              <div class="card card-null">NULL</div>
+              <div class="link-icon">&#129309;</div>
+              <div class="card card-green">Matem&aacute;tica</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel panel-right">
+          <div class="panel-header"><span class="badge-square badge-green"></span> Asignaturas (Sin asignar)</div>
+          <div class="empty-panel-msg">
+            &#9989; Todas las tarjetas de asignaturas pasaron al panel central
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIAPOSITIVA 9: Introducci車n a Diagramas de Venn -->
+    <div class="slide">
+      <div class="venn-container">
+        <div class="statement-title">Representaci&oacute;n Gr&aacute;fica de Conjuntos</div>
+        <div class="statement-text" style="font-size: 1.8rem;">
+          &iquest;C&oacute;mo representamos visualmente las 4 situaciones anteriores?
+        </div>
+        
+        <div class="venn-svg-wrapper">
+          <svg viewBox="0 0 400 220" width="100%">
+            <defs>
+              <clipPath id="clip-left">
+                <circle cx="150" cy="110" r="80" />
+              </clipPath>
+            </defs>
+
+            <!-- C赤rculo Izquierdo (Estudiantes) - Vac赤o -->
+            <circle cx="150" cy="110" r="80" fill="#E0F2FE" fill-opacity="0.3" stroke="#38BDF8" stroke-width="3" stroke-dasharray="6 6" />
+            <!-- C赤rculo Derecho (Asignaturas) - Vac赤o -->
+            <circle cx="250" cy="110" r="80" fill="#DCFCE7" fill-opacity="0.3" stroke="#4ADE80" stroke-width="3" stroke-dasharray="6 6" />
+
+            <!-- Etiquetas -->
+            <text x="110" y="115" font-family="Quicksand" font-size="16" font-weight="bold" fill="#0369A1" text-anchor="middle">Estudiantes</text>
+            <text x="290" y="115" font-family="Quicksand" font-size="16" font-weight="bold" fill="#15803D" text-anchor="middle">Asignaturas</text>
+          </svg>
+        </div>
+
+        <div class="venn-caption">
+          Dos conjuntos intersectados para mapear coincidencias y elementos sin pareja.
+        </div>
+      </div>
+    </div>
+
+    <!-- DIAPOSITIVA 10: Venn Escenario 1 -->
+    <div class="slide">
+      <div class="venn-container">
+        <div class="statement-title">Diagrama de Venn - Escenario 1</div>
+        <div class="statement-text" style="font-size: 1.6rem; margin-bottom: 10px;">
+          Listado de estudiantes que cursan asignaturas
+        </div>
+
+        <div class="venn-svg-wrapper">
+          <svg viewBox="0 0 400 220" width="100%">
+            <defs>
+              <clipPath id="clip-left-10">
+                <circle cx="150" cy="110" r="80" />
+              </clipPath>
+            </defs>
+
+            <circle cx="150" cy="110" r="80" fill="#F1F5F9" stroke="#94A3B8" stroke-width="2" />
+            <circle cx="250" cy="110" r="80" fill="#F1F5F9" stroke="#94A3B8" stroke-width="2" />
+
+            <circle cx="250" cy="110" r="80" clip-path="url(#clip-left-10)" fill="#C084FC" fill-opacity="0.85" />
+
+            <text x="95" y="115" font-family="Quicksand" font-size="14" font-weight="bold" fill="#64748B" text-anchor="middle">Estudiantes</text>
+            <text x="305" y="115" font-family="Quicksand" font-size="14" font-weight="bold" fill="#64748B" text-anchor="middle">Asignaturas</text>
+            <text x="200" y="115" font-family="Quicksand" font-size="13" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Coincidencias</text>
+          </svg>
+        </div>
+
+        <div class="venn-caption" style="background-color: var(--purple-pastel-bg); color: var(--purple-pastel-text); border-color: var(--purple-pastel-border);">
+          Se colorea <b>&uacute;nicamente la Intersecci&oacute;n</b> (solo los pares que lograron acoplar).
+        </div>
+      </div>
+    </div>
+
+    <!-- DIAPOSITIVA 11: Venn Escenario 2 -->
+    <div class="slide">
+      <div class="venn-container">
+        <div class="statement-title">Diagrama de Venn - Escenario 2</div>
+        <div class="statement-text" style="font-size: 1.6rem; margin-bottom: 10px;">
+          Listado de TODOS los estudiantes con su asignatura
+        </div>
+
+        <div class="venn-svg-wrapper">
+          <svg viewBox="0 0 400 220" width="100%">
+            <defs>
+              <clipPath id="clip-left-11">
+                <circle cx="150" cy="110" r="80" />
+              </clipPath>
+            </defs>
+
+            <circle cx="250" cy="110" r="80" fill="#F1F5F9" stroke="#94A3B8" stroke-width="2" />
+            <circle cx="150" cy="110" r="80" fill="#38BDF8" fill-opacity="0.8" stroke="#0284C7" stroke-width="3" />
+
+            <circle cx="250" cy="110" r="80" clip-path="url(#clip-left-11)" fill="#818CF8" fill-opacity="0.9" />
+
+            <text x="105" y="115" font-family="Quicksand" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Estudiantes</text>
+            <text x="305" y="115" font-family="Quicksand" font-size="14" font-weight="bold" fill="#64748B" text-anchor="middle">Asignaturas</text>
+            <text x="200" y="115" font-family="Quicksand" font-size="12" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Parejas</text>
+          </svg>
+        </div>
+
+        <div class="venn-caption" style="background-color: var(--blue-pastel-bg); color: var(--blue-pastel-text); border-color: var(--blue-pastel-border);">
+          Se colorea el <b>C&iacute;rculo Izquierdo completo</b> (todos los estudiantes + la intersecci&oacute;n).
+        </div>
+      </div>
+    </div>
+
+    <!-- DIAPOSITIVA 12: Venn Escenario 3 -->
+    <div class="slide">
+      <div class="venn-container">
+        <div class="statement-title">Diagrama de Venn - Escenario 3</div>
+        <div class="statement-text" style="font-size: 1.6rem; margin-bottom: 10px;">
+          Listado de TODAS las asignaturas con su estudiante
+        </div>
+
+        <div class="venn-svg-wrapper">
+          <svg viewBox="0 0 400 220" width="100%">
+            <defs>
+              <clipPath id="clip-left-12">
+                <circle cx="150" cy="110" r="80" />
+              </clipPath>
+            </defs>
+
+            <circle cx="150" cy="110" r="80" fill="#F1F5F9" stroke="#94A3B8" stroke-width="2" />
+            <circle cx="250" cy="110" r="80" fill="#4ADE80" fill-opacity="0.8" stroke="#16A34A" stroke-width="3" />
+
+            <circle cx="250" cy="110" r="80" clip-path="url(#clip-left-12)" fill="#34D399" fill-opacity="0.9" />
+
+            <text x="95" y="115" font-family="Quicksand" font-size="14" font-weight="bold" fill="#64748B" text-anchor="middle">Estudiantes</text>
+            <text x="295" y="115" font-family="Quicksand" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Asignaturas</text>
+            <text x="200" y="115" font-family="Quicksand" font-size="12" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Parejas</text>
+          </svg>
+        </div>
+
+        <div class="venn-caption" style="background-color: var(--green-pastel-bg); color: var(--green-pastel-text); border-color: var(--green-pastel-border);">
+          Se colorea el <b>C&iacute;rculo Derecho completo</b> (todas las asignaturas + la intersecci&oacute;n).
+        </div>
+      </div>
+    </div>
+
+    <!-- DIAPOSITIVA 13: Venn Escenario 4 -->
+    <div class="slide">
+      <div class="venn-container">
+        <div class="statement-title">Diagrama de Venn - Escenario 4</div>
+        <div class="statement-text" style="font-size: 1.6rem; margin-bottom: 10px;">
+          Listado de TODOS los estudiantes y TODAS las asignaturas
+        </div>
+
+        <div class="venn-svg-wrapper">
+          <svg viewBox="0 0 400 220" width="100%">
+            <circle cx="150" cy="110" r="80" fill="#38BDF8" fill-opacity="0.8" stroke="#0284C7" stroke-width="3" />
+            <circle cx="250" cy="110" r="80" fill="#4ADE80" fill-opacity="0.8" stroke="#16A34A" stroke-width="3" />
+
+            <text x="100" y="115" font-family="Quicksand" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Estudiantes</text>
+            <text x="300" y="115" font-family="Quicksand" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Asignaturas</text>
+            <text x="200" y="115" font-family="Quicksand" font-size="12" font-weight="bold" fill="#334155" text-anchor="middle">Uni&oacute;n Total</text>
+          </svg>
+        </div>
+
+        <div class="venn-caption" style="background-color: var(--yellow-pastel-bg); color: var(--yellow-pastel-text); border-color: var(--yellow-pastel-border);">
+          Se colorea la <b>Uni&oacute;n Universal Completa</b> (ambos c&iacute;rculos totalmente cubiertos).
+        </div>
+      </div>
+    </div>
+
+    <!-- DIAPOSITIVA 14: Conclusiones -->
+    <div class="slide">
+      <div class="conclusions-container">
+        <div class="conclusions-title">
+          <span>&#129504;</span> Conclusiones:
+        </div>
+
+        <div class="questions-grid">
+          <div class="question-card">
+            <div class="question-number">Pregunta 1</div>
+            <div class="question-text">&iquest;Qu&eacute; representaron las parejas que armamos?</div>
+          </div>
+
+          <div class="question-card">
+            <div class="question-number">Pregunta 2</div>
+            <div class="question-text">&iquest;Qu&eacute; pas&oacute; con las tarjetas que quedaron solas y c&oacute;mo lo representamos en el Venn?</div>
+          </div>
+
+          <div class="question-card">
+            <div class="question-number">Pregunta 3</div>
+            <div class="question-text">&iquest;Cu&aacute;ntos escenarios distintos de resultado podemos lograr seg&uacute;n el requerimiento?</div>
+          </div>
+
+          <div class="question-card">
+            <div class="question-number">Pregunta 4</div>
+            <div class="question-text">&iquest;Cu&aacute;les se parecen y por qu&eacute;?</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer con Controles -->
+  <footer>
+    <button class="btn btn-prev" id="btnPrev" onclick="prevSlide()" disabled>
+      Anterior
+    </button>
+
+    <div class="keyboard-hint">
+      Usa las teclas <b>&larr;</b> y <b>&rarr;</b> del teclado para navegar
+    </div>
+
+    <button class="btn btn-next" id="btnNext" onclick="nextSlide()">
+      Siguiente
+    </button>
+  </footer>
+
+  <!-- L車gica JavaScript -->
+  <script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const slideCounter = document.getElementById('slideCounter');
+    const progressFill = document.getElementById('progressFill');
+
+    function updateSlide() {
+      slides.forEach((slide, index) => {
+        if (index === currentSlide) {
+          slide.classList.add('active');
+        } else {
+          slide.classList.remove('active');
+        }
+      });
+
+      slideCounter.innerText = `Diapositiva ${currentSlide + 1} de ${totalSlides}`;
+      const percentage = ((currentSlide + 1) / totalSlides) * 100;
+      progressFill.style.width = `${percentage}%`;
+
+      btnPrev.disabled = (currentSlide === 0);
+      btnNext.disabled = (currentSlide === totalSlides - 1);
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides - 1) {
+        currentSlide++;
+        updateSlide();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        updateSlide();
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft') {
+        prevSlide();
+      }
+    });
+
+    updateSlide();
+  </script>
+</body>
+</html>

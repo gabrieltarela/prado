@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UTU - Clase 2C: Funciones de Agregación, Alias y NULL</title>
+  <!-- Fuente pastel y redondeada -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-pastel: #F8F9FA;
+      --card-bg: #FFFFFF;
+      --text-main: #334155;
+      
+      /* Colores Pastel */
+      --blue-pastel-bg: #E0F2FE;
+      --blue-pastel-border: #BAE6FD;
+      --blue-pastel-text: #0369A1;
+      
+      --green-pastel-bg: #DCFCE7;
+      --green-pastel-border: #BBF7D0;
+      --green-pastel-text: #15803D;
+      
+      --null-pastel-bg: #FFE4E6;
+      --null-pastel-border: #FECDD3;
+      --null-pastel-text: #BE123C;
+
+      --purple-pastel-bg: #F3E8FF;
+      --purple-pastel-border: #E9D5FF;
+      --purple-pastel-text: #6B21A8;
+
+      --yellow-pastel-bg: #FEF9C3;
+      --yellow-pastel-border: #FEF08A;
+      --yellow-pastel-text: #854D0E;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Quicksand', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-pastel);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Barra Superior de Progreso */
+    header {
+      background-color: #FFFFFF;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #F1F5F9;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    }
+
+    .title-tag {
+      background-color: var(--purple-pastel-bg);
+      color: var(--purple-pastel-text);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border: 1px solid var(--purple-pastel-border);
+    }
+
+    .progress-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .progress-bar-bg {
+      width: 220px;
+      height: 10px;
+      background-color: #E2E8F0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 12.5%;
+      background: linear-gradient(90deg, #38BDF8, #A855F7, #4ADE80);
+      transition: width 0.3s ease;
+      border-radius: 10px;
+    }
+
+    .slide-counter {
+      font-weight: 700;
+      color: #64748B;
+      font-size: 0.9rem;
+    }
+
+    /* Contenedor de Diapositivas */
+    main {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      transform: translateX(30px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+
+    /* Tarjeta Principal de Contenido */
+    .content-box {
+      margin: auto;
+      max-width: 950px;
+      width: 100%;
+      background: var(--card-bg);
+      padding: 32px 40px;
+      border-radius: 28px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      border: 2px solid #F1F5F9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .slide-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #1E293B;
+      margin-bottom: 16px;
+    }
+
+    .subtitle-badge {
+      display: inline-block;
+      background-color: var(--purple-pastel-bg);
+      color: var(--purple-pastel-text);
+      padding: 4px 14px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    /* Bloques de Código */
+    .code-box {
+      background-color: #1E293B;
+      color: #F8FAFC;
+      padding: 22px 28px;
+      border-radius: 20px;
+      font-family: monospace;
+      font-size: 1.1rem;
+      line-height: 1.7;
+      text-align: left;
+      width: 100%;
+      max-width: 750px;
+      margin: 16px 0;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      white-space: pre-wrap;
+    }
+
+    .kw-traeme { color: #38BDF8; font-weight: bold; }
+    .kw-desde  { color: #4ADE80; font-weight: bold; }
+    .kw-func   { color: #FACC15; font-weight: bold; }
+    .kw-as     { color: #C084FC; font-weight: bold; }
+
+    /* Tarjetas de Grilla */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      width: 100%;
+      max-width: 820px;
+      margin-top: 15px;
+    }
+
+    .info-card {
+      padding: 20px;
+      border-radius: 20px;
+      text-align: left;
+      border: 2px solid #E2E8F0;
+      background-color: #F8FAFC;
+    }
+
+    /* Juego de Emparejamiento */
+    .matching-game-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      width: 100%;
+      max-width: 750px;
+      margin-top: 16px;
+    }
+
+    .match-column {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .match-item {
+      padding: 12px 18px;
+      border-radius: 16px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 2px solid #E2E8F0;
+      background-color: #F8FAFC;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .match-item:hover:not(.matched) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .match-item.selected-left {
+      background-color: var(--blue-pastel-bg);
+      border-color: #38BDF8;
+      color: var(--blue-pastel-text);
+    }
+
+    .match-item.selected-right {
+      background-color: var(--purple-pastel-bg);
+      border-color: #C084FC;
+      color: var(--purple-pastel-text);
+    }
+
+    .match-item.matched {
+      background-color: var(--green-pastel-bg);
+      border-color: #4ADE80;
+      color: var(--green-pastel-text);
+      cursor: default;
+    }
+
+    .match-item.error {
+      background-color: var(--null-pastel-bg);
+      border-color: #F43F5E;
+      color: var(--null-pastel-text);
+      animation: shake 0.4s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
+    .feedback-box {
+      margin-top: 16px;
+      padding: 12px 20px;
+      border-radius: 16px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      width: 100%;
+      max-width: 750px;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .feedback-neutral { background-color: #F1F5F9; color: #64748B; }
+    .feedback-success { background-color: var(--green-pastel-bg); border: 1px solid var(--green-pastel-border); color: var(--green-pastel-text); }
+    .feedback-error   { background-color: var(--null-pastel-bg); border: 1px solid var(--null-pastel-border); color: var(--null-pastel-text); }
+
+    /* Estilos de Solucionario y Preguntas */
+    .questions-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      width: 100%;
+      max-width: 780px;
+      margin-top: 10px;
+    }
+
+    .q-box {
+      background-color: #F8FAFC;
+      padding: 18px 22px;
+      border-radius: 18px;
+      border-left: 6px solid #38BDF8;
+      text-align: left;
+    }
+
+    .q-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #94A3B8;
+      margin-bottom: 4px;
+    }
+
+    .q-text {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #1E293B;
+    }
+
+    .answer-card {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      background-color: #FFFFFF;
+      border: 2px solid #E2E8F0;
+      border-radius: 20px;
+      padding: 14px 18px;
+      text-align: left;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+    }
+
+    .answer-illustration {
+      flex-shrink: 0;
+      width: 75px;
+      height: 75px;
+      background-color: #F8FAFC;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #E2E8F0;
+    }
+
+    .highlight-answer {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 12px;
+      font-size: 0.98rem;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    .highlight-blue { background-color: var(--blue-pastel-bg); border: 1px solid var(--blue-pastel-border); color: var(--blue-pastel-text); }
+    .highlight-green { background-color: var(--green-pastel-bg); border: 1px solid var(--green-pastel-border); color: var(--green-pastel-text); }
+
+    /* Footer */
+    footer {
+      background-color: #FFFFFF;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 2px solid #F1F5F9;
+    }
+
+    .btn {
+      padding: 12px 28px;
+      border-radius: 14px;
+      border: none;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-prev { background-color: #F1F5F9; color: #475569; }
+    .btn-prev:hover:not(:disabled) { background-color: #E2E8F0; }
+    .btn-next { background-color: #38BDF8; color: #FFFFFF; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3); }
+    .btn-next:hover:not(:disabled) { background-color: #0284C7; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="title-tag">UTU - Bases de Datos | Clase 2C</div>
+    <div class="progress-container">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressFill"></div>
+      </div>
+      <span class="slide-counter" id="slideCounter">Diapositiva 1 de 8</span>
+    </div>
+  </header>
+
+  <!-- Main Slides -->
+  <main>
+
+    <!-- DIAPOSITIVA 1: Portada -->
+    <div class="slide active">
+      <div class="content-box">
+        <span class="subtitle-badge">Clase 2C &bull; Aprendizaje Basado en Problemas</span>
+        <h1 class="slide-title" style="font-size: 2.3rem; margin-top: 15px;">
+          Funciones de Agregaci&oacute;n, Alias (AS) y el Tratamiento de NULL
+        </h1>
+        <p style="font-size: 1.15rem; color: #64748B; margin-top: 12px; max-width: 650px;">
+          Resolviendo los desaf&iacute;os m&eacute;tricos situados de la Adscripci&oacute;n mediante lenguaje aut&oacute;mata y MySQL.
+        </p>
+      </div>
+    </div>
+
+    <!-- DIAPOSITIVA 2: Vocabulario Autómata vs SQL -->
+    <div class="slide">
+      <div class="content-box">
+        <span class="subtitle-badge">Traducci&oacute;n L&oacute;gica</span>
+        <h2 class="slide-title">Ampliando el Vocabulario del Aut&oacute;mata</h2>
+
+        <div class="grid-2">
+          <div class="info-card" style="background-color: var(--blue-pastel-bg); border-color: var(--blue-pastel-border);">
+            <h3 style="color: var(--blue-pastel-text); margin-bottom: 8px;">Lenguaje AUT&Oacute;MATA</h3>
+            <ul style="list-style: none; line-height: 1.8; font-weight: 700; font-family: monospace;">
+              <li>&bull; CONTAME(campo)</li>
+              <li>&bull; PROMEDIAME(campo)</li>
+              <li>&bull; SUMAME(campo)</li>
+              <li>&bull; MAYOR(campo) / MENOR(campo)</li>
+              <li>&bull; COMO 'etiqueta'</li>
+            </ul>
+          </div>
+
+          <div class="info-card" style="background-color: var(--purple-pastel-bg); border-color: var(--purple-pastel-border);">
+            <h3 style="color: var(--purple-pastel-text); margin-bottom: 8px;">Sintaxis MySQL</h3>
+            <ul style="list-style: none; line-height: 1.8; font-weight: 700; font-family: monospace;">
+              <li>&bull; COUNT(columna)</li>
+              <li>&bull; AVG(columna)</li>
+              <li>&bull; SUM(columna)</li>
+              <li>&bull; MAX(columna) / MIN(columna)</li>
+              <li>&bull; AS etiqueta_legible</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIAPOSITIVA 3: Etiquetado y Alias -->
+    <div class="slide">
+      <div class="content-box">
+        <span class="subtitle-badge">Legibilidad de Resultados</span>
+        <h2 class="slide-title">Asignaci&oacute;n de Alias con <span style="color: #C084FC;">AS</span></h2>
+        <p style="font-size: 1rem; color: #64748B; margin-bottom: 10px;">
+          Evita encabezados complejos como <code>AVG(nota)</code> renombrando el resultado devuelto.
+        </p>
+
+        <div class="code-box"><span class="kw-traeme">TRAEME</span> <span class="kw-func">PROMEDIAME</span>(nota) <span class="kw-as">COMO</span> 'promedio_general', 
+       <span class="kw-func">MAYOR</span>(nota) <span class="kw-as">COMO</span> 'nota_maxima'
+<span class="kw-desde">DESDE</span>  estudiantes;
+
+<span class="kw-traeme">SELECT</span> <span class="kw-func">AVG</span>(nota) <span class="kw-as">AS</span> promedio_general, 
+       <span class="kw-func">MAX</span>(nota) <span class="kw-as">AS</span> nota_maxima
+<span class="kw-desde">FROM</span>   estudiantes;</div>
+      </div>
+    </div>
+
+    <!-- DIAPOSITIVA 4: WHERE vs Agregación -->
+    <div class="slide">
+      <div class="content-box">
+        <span class="subtitle-badge">Criterios de Aplicaci&oacute;n</span>
+        <h2 class="slide-title">&iquest;Filtro de Filas o Resumen Cuantitativo?</h2>
+
+        <div class="grid-2" style="margin-top: 10px;">
+          <div class="info-card" style="border-left: 6px solid #38BDF8;">
+            <h3 style="color: #0369A1; margin-bottom: 6px;">Filtro de Filas (WHERE)</h3>
+            <p style="font-size: 0.95rem; color: #475569; line-height: 1.4;">
+              Eval&uacute;a registro por registro. Selecciona o descarta estudiantes individuales bas&aacute;ndose en una condici&oacute;n puntual (ej: <code>WHERE nota >= 6</code>).
+            </p>
+          </div>
+
+          <div class="info-card" style="border-left: 6px solid #FACC15;">
+            <h3 style="color: #854D0E; margin-bottom: 6px;">Resumen (Agregaci&oacute;n)</h3>
+            <p style="font-size: 0.95rem; color: #475569; line-height: 1.4;">
+              Opera sobre un conjunto entero de valores. Procesa M&Uacute;LTIPLES filas para devolver un &Uacute;NICO valor escalar (ej: <code>AVG(nota)</code>).
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIAPOSITIVA 5: COUNT(*) vs COUNT(columna) -->
+    <div class="slide">
+      <div class="content-box">
+        <span class="subtitle-badge">Tratamiento de Valores NULL</span>
+        <h2 class="slide-title">El Gran Enigma: COUNT(*) vs COUNT(columna)</h2>
+
+        <div class="grid-2">
+          <div class="info-card" style="background-color: #F8FAFC; border-color: #CBD5E1;">
+            <h3 style="color: #334155;">COUNT(*)</h3>
+            <p style="font-size: 0.95rem; color: #64748B; margin-top: 6px;">
+              Cuenta <b>todas las filas</b> de la tabla, sin importar si tienen campos vac&iacute;os o <code>NULL</code>.
+            </p>
+            <div style="margin-top: 10px; font-weight: 700; color: #0284C7;">&rarr; Total de inscriptos fsicos</div>
+          </div>
+
+          <div class="info-card" style="background-color: var(--null-pastel-bg); border-color: var(--null-pastel-border);">
+            <h3 style="color: var(--null-pastel-text);">COUNT(id_asignatura)</h3>
+            <p style="font-size: 0.95rem; color: #9F1239; margin-top: 6px;">
+              Cuenta solo los registros donde la columna <b>NO es NULL</b>. Omite las casillas vac&iacute;as.
+            </p>
+            <div style="margin-top: 10px; font-weight: 700; color: #BE123C;">&rarr; Solo estudiantes asignados</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIAPOSITIVA 6: Juego Interactivo -->
+    <div class="slide">
+      <div class="content-box">
+        <span class="subtitle-badge">Juego Interactivo &bull; Clase 2C</span>
+        <h2 class="slide-title">Empareja la Operaci&oacute;n Aut&oacute;mata con SQL</h2>
+
+        <div class="matching-game-container">
+          <div class="match-column" id="leftColumn">
+            <div class="match-item" data-word="PROMEDIAME" onclick="selectLeft(this)">PROMEDIAME</div>
+            <div class="match-item" data-word="CONTAME" onclick="selectLeft(this)">CONTAME</div>
+            <div class="match-item" data-word="COMO" onclick="selectLeft(this)">COMO</div>
+            <div class="match-item" data-word="MAYOR" onclick="selectLeft(this)">MAYOR</div>
+          </div>
+
+          <div class="match-column" id="rightColumn">
+            <div class="match-item" data-word="AS" onclick="selectRight(this)">AS</div>
+            <div class="match-item" data-word="MAX" onclick="selectRight(this)">MAX()</div>
+            <div class="match-item" data-word="AVG" onclick="selectRight(this)">AVG()</div>
+            <div class="match-item" data-word="COUNT" onclick="selectRight(this)">COUNT()</div>
+          </div>
+        </div>
+
+        <div class="feedback-box feedback-neutral" id="feedbackBox">
+          Selecciona una operaci&oacute;n aut&oacute;mata y su equivalente en SQL.
+        </div>
+      </div>
+    </div>
+
+    <!-- DIAPOSITIVA 7: Cierre y Preguntas -->
+    <div class="slide">
+      <div class="content-box">
+        <span class="subtitle-badge">S&iacute;ntesis &amp; Reflexi&oacute;n</span>
+        <h2 class="slide-title" style="margin-bottom: 20px;">Preguntas de Reflexi&oacute;n de la Adscripci&oacute;n</h2>
+
+        <div class="questions-stack">
+          <div class="q-box" style="border-left-color: #38BDF8;">
+            <div class="q-title">Pregunta 1 (Casos NULL)</div>
+            <div class="q-text">&iquest;En qu&eacute; casos el resultado de COUNT(*) difiere de COUNT(atributo) debido a los valores NULL?</div>
+          </div>
+
+          <div class="q-box" style="border-left-color: #4ADE80;">
+            <div class="q-title">Pregunta 2 (Criterio de Selecci&oacute;n)</div>
+            <div class="q-text">&iquest;Qu&eacute; pistas del problema les indicaron utilizar un WHERE o una funci&oacute;n de agregaci&oacute;n?</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIAPOSITIVA 8: Solucionario Ilustrado -->
+    <div class="slide">
+      <div class="content-box">
+        <span class="subtitle-badge">Solucionario Clase 2C</span>
+        <h2 class="slide-title" style="font-size: 1.5rem; margin-bottom: 12px;">
+          Respuestas Clave a los Desaf&iacute;os
+        </h2>
+
+        <div class="questions-stack" style="gap: 12px;">
+          <!-- Resp 1 -->
+          <div class="answer-card">
+            <div class="answer-illustration">
+              <svg width="50" height="50" viewBox="0 0 80 80">
+                <rect x="15" y="15" width="50" height="50" rx="10" fill="#E0F2FE" stroke="#38BDF8" stroke-width="3" />
+                <text x="40" y="45" font-family="monospace" font-size="20" font-weight="bold" fill="#0369A1" text-anchor="middle">* vs 0</text>
+              </svg>
+            </div>
+            <div>
+              <div style="font-size: 0.85rem; font-weight: 700; color: #64748B;">Respuesta 1</div>
+              <div class="highlight-answer highlight-blue">
+                Difieren cuando existen registros con datos incompletos. <b>COUNT(*)</b> cuenta todas las filas, mientras que <b>COUNT(columna)</b> ignora las celdas con <b>NULL</b>.
+              </div>
+            </div>
+          </div>
+
+          <!-- Resp 2 -->
+          <div class="answer-card">
+            <div class="answer-illustration">
+              <svg width="50" height="50" viewBox="0 0 80 80">
+                <circle cx="40" cy="40" r="24" fill="#DCFCE7" stroke="#4ADE80" stroke-width="3" />
+                <path d="M 28,40 L 36,48 L 52,32" fill="none" stroke="#15803D" stroke-width="4" stroke-linecap="round" />
+              </svg>
+            </div>
+            <div>
+              <div style="font-size: 0.85rem; font-weight: 700; color: #64748B;">Respuesta 2</div>
+              <div class="highlight-answer highlight-green">
+                Se usa <b>WHERE</b> si el pedido pide filtrar individuos ("estudiantes con nota &gt; 6") y <b>Agregaci&oacute;n</b> si se busca un resumen colectivo ("el promedio general o la nota m&aacute;xima").
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <button class="btn btn-prev" id="btnPrev" onclick="prevSlide()" disabled>Anterior</button>
+    <div style="font-size: 0.85rem; color: #94A3B8; font-weight: 600;">
+      Usa las teclas <b>&larr;</b> y <b>&rarr;</b> para navegar
+    </div>
+    <button class="btn btn-next" id="btnNext" onclick="nextSlide()">Siguiente</button>
+  </footer>
+
+  <script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const slideCounter = document.getElementById('slideCounter');
+    const progressFill = document.getElementById('progressFill');
+
+    function updateSlide() {
+      slides.forEach((slide, index) => {
+        slide.classList.toggle('active', index === currentSlide);
+      });
+
+      slideCounter.innerText = `Diapositiva ${currentSlide + 1} de ${totalSlides}`;
+      progressFill.style.width = `${((currentSlide + 1) / totalSlides) * 100}%`;
+
+      btnPrev.disabled = (currentSlide === 0);
+      btnNext.disabled = (currentSlide === totalSlides - 1);
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides - 1) { currentSlide++; updateSlide(); }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) { currentSlide--; updateSlide(); }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+      else if (e.key === 'ArrowLeft') prevSlide();
+    });
+
+    // Juego Interactivo Clase 2C
+    let selectedLeft = null;
+    let selectedRight = null;
+    let matchedCount = 0;
+
+    const correctPairs = {
+      'PROMEDIAME': 'AVG',
+      'CONTAME': 'COUNT',
+      'COMO': 'AS',
+      'MAYOR': 'MAX'
+    };
+
+    function selectLeft(el) {
+      if (el.classList.contains('matched')) return;
+      document.querySelectorAll('#leftColumn .match-item').forEach(e => e.classList.remove('selected-left'));
+      el.classList.add('selected-left');
+      selectedLeft = el;
+      checkPair();
+    }
+
+    function selectRight(el) {
+      if (el.classList.contains('matched')) return;
+      document.querySelectorAll('#rightColumn .match-item').forEach(e => e.classList.remove('selected-right'));
+      el.classList.add('selected-right');
+      selectedRight = el;
+      checkPair();
+    }
+
+    function checkPair() {
+      if (!selectedLeft || !selectedRight) return;
+      const lWord = selectedLeft.getAttribute('data-word');
+      const rWord = selectedRight.getAttribute('data-word');
+      const fb = document.getElementById('feedbackBox');
+
+      if (correctPairs[lWord] === rWord) {
+        selectedLeft.className = "match-item matched";
+        selectedRight.className = "match-item matched";
+        fb.className = "feedback-box feedback-success";
+        fb.innerText = `¡Correcto! ${lWord} traduce a ${rWord} en SQL.`;
+        selectedLeft = null; selectedRight = null;
+        matchedCount++;
+        if (matchedCount === 4) {
+          fb.innerText = "🎉 ¡Excelente! Has dominado la traducción de funciones de agregación a SQL.";
+        }
+      } else {
+        const tempL = selectedLeft, tempR = selectedRight;
+        tempL.classList.add('error'); tempR.classList.add('error');
+        fb.className = "feedback-box feedback-error";
+        fb.innerText = `Incorrecto. Revisa la equivalencia de ${lWord}.`;
+        setTimeout(() => {
+          tempL.classList.remove('selected-left', 'error');
+          tempR.classList.remove('selected-right', 'error');
+        }, 1200);
+        selectedLeft = null; selectedRight = null;
+      }
+    }
+
+    updateSlide();
+  </script>
+</body>
+</html>

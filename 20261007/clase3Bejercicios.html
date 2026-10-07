@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="es" id="html-root">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 3B - Ejercicios Interactivos de SQL</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Nunito -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --base-font-size: 20px;
+        }
+
+        html {
+            font-size: var(--base-font-size);
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Nunito', 'Segoe UI', sans-serif;
+            background-color: #fdfbf7;
+            color: #1f2937;
+            line-height: 1.6;
+            background-image: 
+                radial-gradient(#e2e8f0 1.5px, transparent 1.5px),
+                radial-gradient(#e2e8f0 1.5px, #fdfbf7 1.5px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+        }
+
+        /* Pastel Accent Themes */
+        .card-mint { border-top: 10px solid #2d6a4f; }
+        .card-lavender { border-top: 10px solid #4338ca; }
+        .card-yellow { border-top: 10px solid #b45309; }
+        .card-rose { border-top: 10px solid #be123c; }
+
+        .pastel-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .pastel-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Collapsible Hint Container */
+        .hint-container {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out, opacity 0.3s ease, margin-top 0.3s ease;
+        }
+
+        .hint-container.open {
+            max-height: 600px;
+            opacity: 1;
+            margin-top: 1.25rem;
+        }
+
+        /* Accessible Data Tables */
+        table.db-data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #cbd5e1;
+            background-color: #ffffff;
+            font-size: 0.95rem;
+        }
+
+        table.db-data-table th {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            font-weight: 800;
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 2px solid #cbd5e1;
+        }
+
+        table.db-data-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        table.db-data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .null-badge {
+            background-color: #f3f4f6;
+            color: #6b7280;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-weight: 700;
+            font-size: 0.85rem;
+            border: 1px dashed #9ca3af;
+        }
+
+        .highlight-row-success {
+            background-color: #ecfdf5 !important;
+            font-weight: 800;
+        }
+
+        .highlight-row-alert {
+            background-color: #fff1f2 !important;
+            font-weight: 800;
+        }
+
+        .highlight-row-warning {
+            background-color: #fefce8 !important;
+            font-weight: 800;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-16 px-4 sm:px-6 antialiased">
+
+    <header class="max-w-5xl mx-auto pt-8 pb-6">
+        <div class="text-center space-y-3">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-100 text-indigo-900 font-extrabold text-sm border border-indigo-200 shadow-sm">
+                <i class="fa-solid fa-database"></i>
+                <span>Bases de Datos • Clase 3B</span>
+            </div>
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
+                Ejercicios de SQL
+            </h1>
+            <p class="text-base sm:text-lg text-slate-700 font-semibold max-w-3xl mx-auto leading-relaxed">
+                Utiliza las tablas de referencia para resolver cada consigna en tu gestor de base de datos MySQL. Presiona el botón de pista si necesitas una guía.
+            </p>
+        </div>
+    </header>
+
+    <!-- REFERENCE TABLES SECTION -->
+    <section class="max-w-5xl mx-auto mb-10">
+        <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border-2 border-slate-300">
+            <div class="flex items-center gap-3 mb-6 pb-4 border-b-2 border-slate-200">
+                <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-800 flex items-center justify-center text-2xl font-black">
+                    <i class="fa-solid fa-table-list"></i>
+                </div>
+                <div>
+                    <span class="text-xs font-black uppercase tracking-wider text-slate-500">Esquema Institucional</span>
+                    <h2 class="text-xl sm:text-2xl font-black text-slate-900">1. Estructura y Datos de las Tablas</h2>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Tabla Asignaturas -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-base font-black text-indigo-900 flex items-center gap-2">
+                            <i class="fa-solid fa-book text-indigo-600"></i> Tabla: <code class="bg-indigo-50 text-indigo-800 px-2 py-0.5 rounded border border-indigo-200">asignaturas</code>
+                        </h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="db-data-table">
+                            <thead>
+                                <tr>
+                                    <th>id_asignatura</th>
+                                    <th>Asignatura</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>101</td><td>Programación</td></tr>
+                                <tr><td>102</td><td>Bases de Datos</td></tr>
+                                <tr><td>103</td><td>Redes</td></tr>
+                                <tr><td>104</td><td>Sistemas Operativos</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tabla Estudiantes -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-base font-black text-emerald-900 flex items-center gap-2">
+                            <i class="fa-solid fa-user-graduate text-emerald-600"></i> Tabla: <code class="bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200">estudiantes</code>
+                        </h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="db-data-table">
+                            <thead>
+                                <tr>
+                                    <th>id</th>
+                                    <th>nombre</th>
+                                    <th>id_asignatura</th>
+                                    <th>nota</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>1</td><td>Juan</td><td>101</td><td>8</td></tr>
+                                <tr><td>2</td><td>María</td><td>102</td><td>10</td></tr>
+                                <tr><td>3</td><td>Pedro</td><td>101</td><td>6</td></tr>
+                                <tr><td>4</td><td>Ana</td><td><span class="null-badge">NULL</span></td><td><span class="null-badge">NULL</span></td></tr>
+                                <tr><td>5</td><td>Luis</td><td>103</td><td><span class="null-badge">NULL</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- EXERCISES MAIN SECTION -->
+    <main class="max-w-5xl mx-auto space-y-10">
+
+        <!-- EXERCISE 1: MINT THEME -->
+        <article class="pastel-card card-mint bg-white rounded-3xl p-6 sm:p-8 shadow-sm border-2 border-slate-200">
+            <div class="space-y-6">
+                <!-- Clean Header -->
+                <div class="flex items-center gap-3">
+                    <span class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-900 font-black text-xl flex items-center justify-center border border-emerald-300">
+                        1
+                    </span>
+                    <div>
+                        <span class="text-xs font-black uppercase tracking-wider text-emerald-800">Combinación de Tablas</span>
+                        <h2 class="text-xl sm:text-2xl font-black text-slate-900">Ejercicio 1: Reporte Completo de Adscripción</h2>
+                    </div>
+                </div>
+
+                <!-- Requerimiento Box -->
+                <div class="bg-emerald-50/80 rounded-2xl p-5 border-2 border-emerald-200 text-slate-800">
+                    <h3 class="text-xs font-black uppercase tracking-wider text-emerald-900 mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-building-columns text-base"></i> Requerimiento
+                    </h3>
+                    <p class="text-base sm:text-lg font-bold leading-relaxed">
+                        El departamento de Adscripción solicita un reporte institucional completo que incluya a todos los estudiantes (incluso aquellos sin asignatura inscripta) y a todas las asignaturas (incluso aquellas sin estudiantes matriculados).
+                    </p>
+                </div>
+
+                <!-- Consigna Box -->
+                <div class="bg-slate-50 rounded-2xl p-5 border-2 border-slate-200 text-slate-800">
+                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-600 mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square text-base"></i> Consigna
+                    </h3>
+                    <p class="text-base sm:text-lg font-bold leading-relaxed">
+                        1. Escribe la consulta en sintaxis MySQL que permita obtener este listado utilizando la combinación de LEFT JOIN, RIGHT JOIN y la sentencia UNION.
+                    </p>
+                </div>
+
+                <!-- Visual Table Diagram for Ex 1 -->
+                <div class="bg-slate-50 rounded-2xl p-4 sm:p-6 border-2 border-slate-200 space-y-3">
+                    <h4 class="text-sm font-black text-slate-700 flex items-center gap-2">
+                        <i class="fa-solid fa-diagram-project text-emerald-700"></i> Representación Visual de Datos en este Requerimiento:
+                    </h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-bold">
+                        <div class="bg-white p-3 rounded-xl border border-slate-300">
+                            <span class="block text-emerald-800 font-extrabold mb-1">🔍 LEFT JOIN (Estudiantes):</span>
+                            <p class="text-slate-600 mb-2">Incluye a todos los alumnos, por ejemplo <strong>Ana</strong> (sin asignatura):</p>
+                            <div class="bg-emerald-50 p-2 rounded border border-emerald-200 font-mono text-slate-800">
+                                Ana ➔ <span class="null-badge">NULL</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-3 rounded-xl border border-slate-300">
+                            <span class="block text-indigo-800 font-extrabold mb-1">🔍 RIGHT JOIN (Asignaturas):</span>
+                            <p class="text-slate-600 mb-2">Incluye todas las materias, por ejemplo <strong>Sistemas Operativos</strong> (sin alumnos):</p>
+                            <div class="bg-indigo-50 p-2 rounded border border-indigo-200 font-mono text-slate-800">
+                                <span class="null-badge">NULL</span> ➔ Sist. Operativos
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-3 rounded-xl border border-slate-300">
+                            <span class="block text-purple-800 font-extrabold mb-1">⚡ UNION:</span>
+                            <p class="text-slate-600 mb-2">Combina ambos resultados eliminando duplicados.</p>
+                            <div class="bg-purple-50 p-2 rounded border border-purple-200 text-purple-900 font-extrabold text-center">
+                                Reporte Unificado
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hint Toggle Button -->
+                <div>
+                    <button onclick="toggleHint('hint1', this)" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-950 font-black text-base border-2 border-emerald-300 shadow-sm transition">
+                        <i class="fa-solid fa-lightbulb text-amber-500 text-lg"></i>
+                        <span>Pista</span>
+                        <i class="fa-solid fa-chevron-down text-sm transition-transform hint-icon"></i>
+                    </button>
+
+                    <div id="hint1" class="hint-container">
+                        <div class="bg-amber-50/90 rounded-2xl p-6 border-2 border-amber-300 text-slate-800 space-y-3">
+                            <h4 class="font-black text-amber-900 text-lg flex items-center gap-2">
+                                <i class="fa-solid fa-brain"></i> Preguntas para Razonar la Solución:
+                            </h4>
+                            <ul class="list-disc list-inside space-y-2 font-bold text-slate-700">
+                                <li>Recuerda que MySQL <strong>no soporta</strong> la sintaxis directa <code>FULL OUTER JOIN</code>.</li>
+                                <li>Si haces <code>estudiantes LEFT JOIN asignaturas</code>, ¿quién queda incluido obligatoriamente aunque su <code>id_asignatura</code> sea <code>NULL</code>?</li>
+                                <li>Si luego haces <code>estudiantes RIGHT JOIN asignaturas</code>, ¿qué asignatura aparecía sin estudiantes matriculados (id_asignatura 104)?</li>
+                                <li>¿Por qué utilizamos <code>UNION</code> en lugar de <code>UNION ALL</code> entre ambas consultas?</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- EXERCISE 2: LAVENDER THEME -->
+        <article class="pastel-card card-lavender bg-white rounded-3xl p-6 sm:p-8 shadow-sm border-2 border-slate-200">
+            <div class="space-y-6">
+                <!-- Clean Header -->
+                <div class="flex items-center gap-3">
+                    <span class="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-900 font-black text-xl flex items-center justify-center border border-indigo-300">
+                        2
+                    </span>
+                    <div>
+                        <span class="text-xs font-black uppercase tracking-wider text-indigo-800">Subconsultas Anidadas</span>
+                        <h2 class="text-xl sm:text-2xl font-black text-slate-900">Ejercicio 2: Estudiantes por Encima del Promedio General</h2>
+                    </div>
+                </div>
+
+                <!-- Requerimiento Box -->
+                <div class="bg-indigo-50/80 rounded-2xl p-5 border-2 border-indigo-200 text-slate-800">
+                    <h3 class="text-xs font-black uppercase tracking-wider text-indigo-900 mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-base"></i> Requerimiento
+                    </h3>
+                    <p class="text-base sm:text-lg font-bold leading-relaxed">
+                        La Dirección del centro solicita la lista con el nombre y la nota de todos los estudiantes cuyo rendimiento académico sea superior al promedio general de calificaciones de la institución.
+                    </p>
+                </div>
+
+                <!-- Consigna Box -->
+                <div class="bg-slate-50 rounded-2xl p-5 border-2 border-slate-200 text-slate-800">
+                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-600 mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square text-base"></i> Consigna
+                    </h3>
+                    <p class="text-base sm:text-lg font-bold leading-relaxed">
+                        Escribe la consulta SQL utilizando una subconsulta anidada en la cláusula WHERE Y detalla el orden de resolución.
+                    </p>
+                </div>
+
+                <!-- Visual Table Diagram for Ex 2 -->
+                <div class="bg-slate-50 rounded-2xl p-4 sm:p-6 border-2 border-slate-200 space-y-3">
+                    <h4 class="text-sm font-black text-slate-700 flex items-center gap-2">
+                        <i class="fa-solid fa-calculator text-indigo-700"></i> Análisis de Datos de la Tabla 'estudiantes':
+                    </h4>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="db-data-table">
+                            <thead>
+                                <tr>
+                                    <th>Estudiante</th>
+                                    <th>Nota Registrada</th>
+                                    <th>Cálculo Promedio Institucional</th>
+                                    <th>¿Supera la Media (> 8.0)?</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Juan</td>
+                                    <td>8</td>
+                                    <td rowspan="3" class="bg-slate-100 text-center font-bold text-slate-700 align-middle">
+                                        AVG(8, 10, 6) = <span class="text-indigo-900 font-black underline">8.0</span>
+                                    </td>
+                                    <td>❌ No (Es igual a 8.0)</td>
+                                </tr>
+                                <tr class="highlight-row-success">
+                                    <td>María ⭐</td>
+                                    <td><span class="text-emerald-800 font-black text-lg">10</span></td>
+                                    <td>✅ <strong>SÍ (10 > 8.0) → Incluida</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>Pedro</td>
+                                    <td>6</td>
+                                    <td>❌ No (6 < 8.0)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Hint Toggle Button -->
+                <div>
+                    <button onclick="toggleHint('hint2', this)" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-indigo-100 hover:bg-indigo-200 text-indigo-950 font-black text-base border-2 border-indigo-300 shadow-sm transition">
+                        <i class="fa-solid fa-lightbulb text-amber-500 text-lg"></i>
+                        <span>Pista</span>
+                        <i class="fa-solid fa-chevron-down text-sm transition-transform hint-icon"></i>
+                    </button>
+
+                    <div id="hint2" class="hint-container">
+                        <div class="bg-amber-50/90 rounded-2xl p-6 border-2 border-amber-300 text-slate-800 space-y-3">
+                            <h4 class="font-black text-amber-900 text-lg flex items-center gap-2">
+                                <i class="fa-solid fa-brain"></i> Preguntas para Razonar la Solución:
+                            </h4>
+                            <ul class="list-disc list-inside space-y-2 font-bold text-slate-700">
+                                <li>Para comparar la nota de cada estudiante, primero necesitas un valor de referencia: ¿cómo obtienes el promedio general con la función de agregación <code>AVG(nota)</code>?</li>
+                                <li>¿Por qué esta operación debe encerrarse entre paréntesis <code>(SELECT AVG(nota) FROM estudiantes)</code> en la cláusula <code>WHERE</code>?</li>
+                                <li><strong>Orden de resolución:</strong> ¿Qué resuelve primero el motor MySQL: la subconsulta interna dentro del paréntesis o la consulta externa principal?</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- EXERCISE 3: BUTTER / YELLOW THEME -->
+        <article class="pastel-card card-yellow bg-white rounded-3xl p-6 sm:p-8 shadow-sm border-2 border-slate-200">
+            <div class="space-y-6">
+                <!-- Clean Header -->
+                <div class="flex items-center gap-3">
+                    <span class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-900 font-black text-xl flex items-center justify-center border border-amber-300">
+                        3
+                    </span>
+                    <div>
+                        <span class="text-xs font-black uppercase tracking-wider text-amber-800">Valores Extremos</span>
+                        <h2 class="text-xl sm:text-2xl font-black text-slate-900">Ejercicio 3: Búsqueda de Calificación Máxima</h2>
+                    </div>
+                </div>
+
+                <!-- Requerimiento Box -->
+                <div class="bg-amber-50/80 rounded-2xl p-5 border-2 border-amber-200 text-slate-800">
+                    <h3 class="text-xs font-black uppercase tracking-wider text-amber-900 mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-trophy text-base"></i> Requerimiento
+                    </h3>
+                    <p class="text-base sm:text-lg font-bold leading-relaxed">
+                        Adscripción desea otorgar un reconocimiento al estudiante o estudiantes que hayan obtenido la calificación más alta registrada en la base de datos.
+                    </p>
+                </div>
+
+                <!-- Consigna Box -->
+                <div class="bg-slate-50 rounded-2xl p-5 border-2 border-slate-200 text-slate-800">
+                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-600 mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square text-base"></i> Consigna
+                    </h3>
+                    <p class="text-base sm:text-lg font-bold leading-relaxed">
+                        Diseña una consulta SQL que emplee una subconsulta con la función MAX().
+                    </p>
+                </div>
+
+                <!-- Visual Table Diagram for Ex 3 -->
+                <div class="bg-slate-50 rounded-2xl p-4 sm:p-6 border-2 border-slate-200 space-y-3">
+                    <h4 class="text-sm font-black text-slate-700 flex items-center gap-2">
+                        <i class="fa-solid fa-star text-amber-600"></i> Identificación del Valor Máximo en 'estudiantes':
+                    </h4>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="db-data-table">
+                            <thead>
+                                <tr>
+                                    <th>id</th>
+                                    <th>Nombre Estudiante</th>
+                                    <th>Nota</th>
+                                    <th>Evaluación Subconsulta MAX()</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>1</td><td>Juan</td><td>8</td><td>Menor al máximo</td></tr>
+                                <tr class="highlight-row-warning">
+                                    <td>2</td>
+                                    <td><strong>María</strong></td>
+                                    <td><span class="text-amber-800 font-black text-lg">10</span></td>
+                                    <td>🏆 <strong>COINCIDE CON MAX(nota) = 10</strong></td>
+                                </tr>
+                                <tr><td>3</td><td>Pedro</td><td>6</td><td>Menor al máximo</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Hint Toggle Button -->
+                <div>
+                    <button onclick="toggleHint('hint3', this)" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-950 font-black text-base border-2 border-amber-300 shadow-sm transition">
+                        <i class="fa-solid fa-lightbulb text-amber-600 text-lg"></i>
+                        <span>Pista</span>
+                        <i class="fa-solid fa-chevron-down text-sm transition-transform hint-icon"></i>
+                    </button>
+
+                    <div id="hint3" class="hint-container">
+                        <div class="bg-amber-50/90 rounded-2xl p-6 border-2 border-amber-300 text-slate-800 space-y-3">
+                            <h4 class="font-black text-amber-900 text-lg flex items-center gap-2">
+                                <i class="fa-solid fa-brain"></i> Preguntas para Razonar la Solución:
+                            </h4>
+                            <ul class="list-disc list-inside space-y-2 font-bold text-slate-700">
+                                <li>¿Por qué no es correcto escribir simplemente <code>WHERE nota = MAX(nota)</code> directamente en una sola cláusula WHERE? (Las funciones de agregación no pueden usarse directamente en el WHERE).</li>
+                                <li>¿Qué valor escalar exacto devuelve la subconsulta <code>(SELECT MAX(nota) FROM estudiantes)</code>?</li>
+                                <li>Si existieran dos estudiantes con nota 10, ¿tu consulta traería a ambos? ¿Por qué comparar con <code>= (subconsulta)</code> resuelve empates correctamente?</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- EXERCISE 4: ROSE THEME -->
+        <article class="pastel-card card-rose bg-white rounded-3xl p-6 sm:p-8 shadow-sm border-2 border-slate-200">
+            <div class="space-y-6">
+                <!-- Clean Header -->
+                <div class="flex items-center gap-3">
+                    <span class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-900 font-black text-xl flex items-center justify-center border border-rose-300">
+                        4
+                    </span>
+                    <div>
+                        <span class="text-xs font-black uppercase tracking-wider text-rose-800">Filtro Dinámico de Apoyo</span>
+                        <h2 class="text-xl sm:text-2xl font-black text-slate-900">Ejercicio 4: Identificación de Alumnos por Debajo de la Media</h2>
+                    </div>
+                </div>
+
+                <!-- Requerimiento Box -->
+                <div class="bg-rose-50/80 rounded-2xl p-5 border-2 border-rose-200 text-slate-800">
+                    <h3 class="text-xs font-black uppercase tracking-wider text-rose-900 mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-hand-holding-hand text-base"></i> Requerimiento
+                    </h3>
+                    <p class="text-base sm:text-lg font-bold leading-relaxed">
+                        Se requiere identificar a los estudiantes que necesitan apoyo académico por estar rindiendo por debajo del promedio general de calificaciones del centro.
+                    </p>
+                </div>
+
+                <!-- Consigna Box -->
+                <div class="bg-slate-50 rounded-2xl p-5 border-2 border-slate-200 text-slate-800">
+                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-600 mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square text-base"></i> Consigna
+                    </h3>
+                    <p class="text-base sm:text-lg font-bold leading-relaxed">
+                        Construye la consulta SQL e indica la función que cumple la subconsulta.
+                    </p>
+                </div>
+
+                <!-- Visual Table Diagram for Ex 4 -->
+                <div class="bg-slate-50 rounded-2xl p-4 sm:p-6 border-2 border-slate-200 space-y-3">
+                    <h4 class="text-sm font-black text-slate-700 flex items-center gap-2">
+                        <i class="fa-solid fa-user-gear text-rose-700"></i> Detección de Estudiantes con Nota < Media (8.0):
+                    </h4>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="db-data-table">
+                            <thead>
+                                <tr>
+                                    <th>Estudiante</th>
+                                    <th>Nota</th>
+                                    <th>Comparación con Media (8.0)</th>
+                                    <th>Estado Apoyo Académico</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Juan</td><td>8</td><td>8 es igual a 8.0</td><td>No requiere apoyo urgente</td></tr>
+                                <tr><td>María</td><td>10</td><td>10 es superior a 8.0</td><td>Rendimiento alto</td></tr>
+                                <tr class="highlight-row-alert">
+                                    <td><strong>Pedro</strong></td>
+                                    <td><span class="text-rose-700 font-black text-lg">6</span></td>
+                                    <td>⚠️ <strong>6 < 8.0 (Menor a la media)</strong></td>
+                                    <td>🚨 <strong>Requiere Apoyo Académico</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Hint Toggle Button -->
+                <div>
+                    <button onclick="toggleHint('hint4', this)" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-950 font-black text-base border-2 border-rose-300 shadow-sm transition">
+                        <i class="fa-solid fa-lightbulb text-amber-500 text-lg"></i>
+                        <span>Pista</span>
+                        <i class="fa-solid fa-chevron-down text-sm transition-transform hint-icon"></i>
+                    </button>
+
+                    <div id="hint4" class="hint-container">
+                        <div class="bg-amber-50/90 rounded-2xl p-6 border-2 border-amber-300 text-slate-800 space-y-3">
+                            <h4 class="font-black text-amber-900 text-lg flex items-center gap-2">
+                                <i class="fa-solid fa-brain"></i> Preguntas para Razonar la Solución:
+                            </h4>
+                            <ul class="list-disc list-inside space-y-2 font-bold text-slate-700">
+                                <li>¿Cuál operador de comparación condicional debes usar en el <code>WHERE</code> para obtener las notas estrictamente menores?</li>
+                                <li><strong>Función de la subconsulta:</strong> ¿Por qué es más profesional utilizar la subconsulta que poner un número fijo (como <code>WHERE nota < 8</code>)?</li>
+                                <li>Pensá: Si mañana ingresan nuevos alumnos y el promedio del centro cambia a 7.5, ¿tu consulta con la subconsulta seguirá funcionando automáticamente sin tener que modificar el código?</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-16 text-center text-sm font-bold text-slate-500 max-w-5xl mx-auto border-t-2 border-slate-200 pt-8">
+        <p>Bases de Datos MySQL • Material de Presentación de Ejercicios Prácticos Clase 3B</p>
+    </footer>
+
+    <script>
+        // Toggle hint visibility
+        function toggleHint(hintId, buttonElem) {
+            const hintContainer = document.getElementById(hintId);
+            const icon = buttonElem.querySelector('.hint-icon');
+
+            if (hintContainer.classList.contains('open')) {
+                hintContainer.classList.remove('open');
+                if (icon) icon.style.transform = 'rotate(0deg)';
+            } else {
+                hintContainer.classList.add('open');
+                if (icon) icon.style.transform = 'rotate(180deg)';
+            }
+        }
+    </script>
+</body>
+</html>

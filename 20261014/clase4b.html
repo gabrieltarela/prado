@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 4B: Consolidación Integradora de Consultas SQL Avanzadas</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-color: #38bdf8;
+            --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #3b82f6 100%);
+            --code-bg: #0f172a;
+            --border-color: #334155;
+            --error-color: #f43f5e;
+            --success-color: #10b981;
+            --header-bg: rgba(30, 41, 59, 0.85);
+            --blockquote-bg: rgba(255, 255, 255, 0.03);
+            --btn-bg: #334155;
+            --btn-hover: #38bdf8;
+            --btn-hover-color: #0f172a;
+            --table-border: #334155;
+            --table-header-bg: #0f172a;
+        }
+
+        .light-mode {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --accent-color: #0284c7;
+            --accent-gradient: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+            --code-bg: #f8fafc;
+            --border-color: #cbd5e1;
+            --error-color: #e11d48;
+            --success-color: #059669;
+            --header-bg: rgba(255, 255, 255, 0.85);
+            --blockquote-bg: rgba(0, 0, 0, 0.02);
+            --btn-bg: #e2e8f0;
+            --btn-hover: #0284c7;
+            --btn-hover-color: #ffffff;
+            --table-border: #cbd5e1;
+            --table-header-bg: #f1f5f9;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Header de la presentación */
+        header {
+            padding: 1.2rem 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--header-bg);
+            backdrop-filter: blur(10px);
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .header-title {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .progress-indicator {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            background: rgba(56, 189, 248, 0.1);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+        }
+
+        .theme-toggle-btn {
+            background: var(--btn-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 0.8rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle-btn:hover {
+            border-color: var(--accent-color);
+        }
+
+        /* Contenedor de Diapositivas con scroll vertical operativo */
+        .presentation-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem 2rem;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+            max-width: 950px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2.2rem 2.5rem;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            animation: fadeIn 0.3s ease-in-out;
+            margin: auto 0;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Tipografía y elementos dentro de las slides */
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 1.35rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            color: var(--accent-color);
+        }
+
+        p, li {
+            font-size: 1.05rem;
+            line-height: 1.4;
+            color: var(--text-secondary);
+            margin-bottom: 0.6rem;
+        }
+
+        ul, ol {
+            margin-left: 1.5rem;
+            margin-bottom: 0.6rem;
+        }
+
+        strong {
+            color: var(--text-primary);
+        }
+
+        /* Bloques de código */
+        pre {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.82rem;
+            color: var(--accent-color);
+            overflow-x: auto;
+            margin: 0.8rem 0;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .code-success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        /* Cajas de notas o alertas */
+        .alert-box {
+            background: rgba(56, 189, 248, 0.05);
+            border-left: 4px solid var(--accent-color);
+            padding: 0.8rem 1rem;
+            border-radius: 0 8px 8px 0;
+            margin: 0.8rem 0;
+        }
+
+        .alert-box p {
+            margin-bottom: 0;
+            color: var(--text-primary);
+        }
+
+        blockquote {
+            background: var(--blockquote-bg);
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin: 0.8rem 0;
+            font-style: italic;
+            border-left: 3px solid var(--text-secondary);
+        }
+
+        /* Tablas de resultados simuladas */
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.8rem 0;
+            font-size: 0.88rem;
+        }
+
+        .result-table th, .result-table td {
+            border: 1px solid var(--border-color);
+            padding: 0.45rem 0.7rem;
+            text-align: left;
+        }
+
+        .result-table th {
+            background-color: var(--table-header-bg);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .result-table td {
+            color: var(--text-secondary);
+            font-family: 'Fira Code', monospace;
+            font-size: 0.78rem;
+        }
+
+        /* Controles de Navegación inferior */
+        footer {
+            padding: 1rem 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            background: var(--header-bg);
+            backdrop-filter: blur(10px);
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .nav-btn {
+            background-color: var(--btn-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 0.6rem 1.2rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background-color: var(--btn-hover);
+            color: var(--btn-hover-color);
+            transform: translateY(-1px);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .keyboard-hint {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="header-title">Bases de Datos Relacionales</div>
+        <div class="header-right">
+            <div class="progress-indicator" id="progress-indicator">Diapositiva 1 de 10</div>
+            <button class="theme-toggle-btn" onclick="toggleTheme()" id="theme-btn">🌙 Oscuro</button>
+        </div>
+    </header>
+
+    <!-- Contenedor Principal de Diapositivas -->
+    <main class="presentation-container">
+
+        <!-- Slide 1: Portada y Fundamentación -->
+        <div class="slide active">
+            <h1>Consolidación de la Unidad: Caso Integrador</h1>
+            <h2>Clase 4B: Articulación de Consultas SQL Avanzadas</h2>
+            
+            <p style="margin-top: 1.2rem;">Utiliza los botones inferiores o las flechas del teclado (← / →) para recorrer el caso de estudio y sus soluciones.</p>
+        </div>
+
+        <!-- Slide 2: Planteo del Caso de Adscripción -->
+        <div class="slide">
+            <h1>Planteo del Caso: Adscripción</h1>
+            <h2>Informe Integral de Rendimiento Académico</h2>
+            <blockquote>
+                "El equipo de dirección y adscripción ha solicitado un informe integral sobre el rendimiento académico del año lectivo, utilizando la base de datos institucional (Estudiantes, Asignaturas, Inscripciones)."[cite: 2]
+            </blockquote>
+            <p><strong>Dinámica de Taller en Equipos:</strong></p>
+            <ul>
+                <li>Equipos de 3 o 4 integrantes con total autonomía de análisis[cite: 2].</li>
+                <li>Consensuar estrategias de diseño computacional antes de escribir código[cite: 2].</li>
+                <li>Uso combinado de <code>JOIN</code>, <code>UNION</code>, Subconsultas, <code>GROUP BY</code> y <code>HAVING</code>[cite: 2].</li>
+            </ul>
+        </div>
+
+        <!-- ================= REQUERIMIENTO 1 ================= -->
+        <!-- Slide 3: Requerimiento 1 - Planteo -->
+        <div class="slide">
+            <h1>Taller Práctico: Caso Integrador</h1>
+            <h2>Requerimiento 1: Reporte de Promedios por Nombre de Asignatura</h2>
+            <div class="alert-box">
+                <p><strong>Consigna:</strong> Obtener el nombre completo de cada asignatura (tabla <code>Asignaturas</code>) junto con la cantidad total de estudiantes inscriptos y el promedio general de notas cursadas en 2024, ordenado de mayor a menor por promedio[cite: 2].</p>
+            </div>
+            <p><em>Desafío técnico:</em> Combinar tablas relacionales mediante combinación horizontal (<code>JOIN</code>), agrupar categorías (<code>GROUP BY</code>) y filtrar por año operativo (<code>WHERE</code>)[cite: 2].</p>
+        </div>
+
+        <!-- Slide 4: Requerimiento 1 - Solución -->
+        <div class="slide">
+            <h1>Solución: Requerimiento 1</h1>
+            <h2>Integración JOIN + GROUP BY + WHERE</h2>
+            <pre><code>SELECT a.nombre_asignatura, COUNT(i.id_estudiante) AS total_alumnos, AVG(i.nota) AS promedio_materia
+FROM Asignaturas a
+JOIN Inscripciones i ON a.id_asignatura = i.id_asignatura
+WHERE i.anio_cursado = 2024
+GROUP BY a.id_asignatura, a.nombre_asignatura
+ORDER BY promedio_materia DESC;</code></pre>
+            <p><strong>Resultado esperado:</strong></p>
+            <table class="result-table">
+                <thead>
+                    <tr><th>nombre_asignatura</th><th>total_alumnos</th><th>promedio_materia</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Bases de Datos II (Consultas Avanzadas)</td><td>2</td><td>8.7500</td></tr>
+                    <tr><td>Sistemas Operativos</td><td>5</td><td>6.9000</td></tr>
+                    <tr><td>Bases de Datos I</td><td>7</td><td>6.8571</td></tr>
+                    <tr><td>Programación I</td><td>7</td><td>6.3571</td></tr>
+                    <tr><td>Programación II</td><td>1</td><td>5.5000</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ================= REQUERIMIENTO 2 ================= -->
+        <!-- Slide 5: Requerimiento 2 - Planteo -->
+        <div class="slide">
+            <h1>Taller Práctico: Caso Integrador</h1>
+            <h2>Requerimiento 2: Asignaturas Críticas con Alumnos Reprobados</h2>
+            <div class="alert-box">
+                <p><strong>Consigna:</strong> Listar el nombre de las asignaturas que posean un promedio general de calificaciones menor a 6.0, mostrando además el nombre del departamento/semestre y el número de inscripciones registradas[cite: 2].</p>
+            </div>
+            <p><em>Desafío técnico:</em> Evaluar métricas de grupo consolidadas utilizando la cláusula <code>HAVING</code> sobre agregados[cite: 2].</p>
+        </div>
+
+        <!-- Slide 6: Requerimiento 2 - Solución -->
+        <div class="slide">
+            <h1>Solución: Requerimiento 2</h1>
+            <h2>Integración JOIN + GROUP BY + HAVING</h2>
+            <pre><code>SELECT a.nombre_asignatura, a.semestre, COUNT(i.id_inscripcion) AS cantidad_inscriptos, AVG(i.nota) AS promedio_general
+FROM Asignaturas a
+JOIN Inscripciones i ON a.id_asignatura = i.id_asignatura
+GROUP BY a.id_asignatura, a.nombre_asignatura, a.semestre
+HAVING AVG(i.nota) &lt; 6.0;</code></pre>
+            <p><strong>Resultado esperado:</strong></p>
+            <table class="result-table">
+                <thead>
+                    <tr><th>nombre_asignatura</th><th>semestre</th><th>cantidad_inscriptos</th><th>promedio_general</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Programación II</td><td>2</td><td>1</td><td>5.5000</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ================= REQUERIMIENTO 3 ================= -->
+        <!-- Slide 7: Requerimiento 3 - Planteo -->
+        <div class="slide">
+            <h1>Taller Práctico: Caso Integrador</h1>
+            <h2>Requerimiento 3: Estudiantes con Rendimiento Superior al Promedio General</h2>
+            <div class="alert-box">
+                <p><strong>Consigna:</strong> Obtener el nombre y apellido de los estudiantes cuyo promedio de calificaciones individual sea superior al promedio general de TODA la institución[cite: 2].</p>
+            </div>
+            <p><em>Desafío técnico:</em> Implementar subconsultas (<code>SELECT</code> anidados) dentro de los filtros relacionales para comparar métricas dinámicas[cite: 2].</p>
+        </div>
+
+        <!-- Slide 8: Requerimiento 3 - Solución -->
+        <div class="slide">
+            <h1>Solución: Requerimiento 3</h1>
+            <h2>Integración Subconsulta + JOIN + GROUP BY</h2>
+            <pre><code>SELECT e.nombre, e.apellido, AVG(i.nota) AS promedio_estudiante
+FROM Estudiantes e
+JOIN Inscripciones i ON e.id_estudiante = i.id_estudiante
+GROUP BY e.id_estudiante, e.nombre, e.apellido
+HAVING AVG(i.nota) &gt; (
+    SELECT AVG(nota) 
+    FROM Inscripciones
+)
+ORDER BY promedio_estudiante DESC;</code></pre>
+            <p><strong>Resultado esperado:</strong></p>
+            <table class="result-table">
+                <thead>
+                    <tr><th>nombre</th><th>apellido</th><th>promedio_estudiante</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Valentina</td><td>Gómez</td><td>9.2500</td></tr>
+                    <tr><td>Sofía</td><td>Rodríguez</td><td>8.7500</td></tr>
+                    <tr><td>Lucía</td><td>Morales</td><td>8.2500</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ================= REQUERIMIENTO 4 ================= -->
+        <!-- Slide 9: Requerimiento 4 - Planteo -->
+        <div class="slide">
+            <h1>Taller Práctico: Caso Integrador</h1>
+            <h2>Requerimiento 4: Listado Consolidado de Cobertura de Inscripciones</h2>
+            <div class="alert-box">
+                <p><strong>Consigna:</strong> Generar un reporte completo que muestre todos los estudiantes con sus asignaturas inscriptas, incluyendo tanto a los estudiantes sin asignaturas asignadas (<code>LEFT JOIN</code>) como a las asignaturas sin estudiantes registrados (<code>RIGHT JOIN</code>), unificados mediante la sentencia <code>UNION</code>[cite: 2].</p>
+            </div>
+            <p><em>Desafío técnico:</em> Simular una combinación completa (<code>FULL OUTER JOIN</code>) mediante operadores de conjuntos verticales[cite: 2].</p>
+        </div>
+
+        <!-- Slide 10: Requerimiento 4 - Solución y Cierre -->
+        <div class="slide">
+            <h1>Solución: Requerimiento 4 & Cierre</h1>
+            <h2>Simulación FULL OUTER JOIN con UNION</h2>
+            <pre class="code-success"><code>SELECT e.nombre, e.apellido, a.nombre_asignatura, i.nota
+FROM Estudiantes e
+LEFT JOIN Inscripciones i ON e.id_estudiante = i.id_estudiante
+LEFT JOIN Asignaturas a ON i.id_asignatura = a.id_asignatura
+UNION
+SELECT e.nombre, e.apellido, a.nombre_asignatura, i.nota
+FROM Estudiantes e
+RIGHT JOIN Inscripciones i ON e.id_estudiante = i.id_estudiante
+RIGHT JOIN Asignaturas a ON i.id_asignatura = a.id_asignatura;</code></pre>
+            <p><strong>Resultado esperado (muestra unificada de cobertura):</strong></p>
+            <table class="result-table">
+                <thead>
+                    <tr><th>nombre</th><th>apellido</th><th>nombre_asignatura</th><th>nota</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Sofía</td><td>Rodríguez</td><td>Bases de Datos I</td><td>9.50</td></tr>
+                    <tr><td>Mateo</td><td>Benítez</td><td>Programación II</td><td>5.50</td></tr>
+                    <tr><td>...</td><td>...</td><td>...</td><td>...</td></tr>
+                    <tr><td><em>(Alumnos/Materias sin match)</em></td><td><em>NULL</em></td><td><em>NULL</em></td><td><em>NULL</em></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+
+    <!-- Footer con Botones de Navegación -->
+    <footer>
+        <button class="nav-btn" id="prev-btn" onclick="changeSlide(-1)">
+            ← Anterior
+        </button>
+        <span class="keyboard-hint">Usa las flechas del teclado para navegar o scrollea si es necesario</span>
+        <button class="nav-btn" id="next-btn" onclick="changeSlide(1)">
+            Siguiente →
+        </button>
+    </footer>
+
+    <!-- Script de Control y Accesibilidad -->
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        const progressIndicator = document.getElementById('progress-indicator');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const themeBtn = document.getElementById('theme-btn');
+
+        function updateSlide() {
+            slides.forEach((slide, index) => {
+                slide.classList.toggle('active', index === currentSlide);
+            });
+            progressIndicator.textContent = `Diapositiva ${currentSlide + 1} de ${totalSlides}`;
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === totalSlides - 1;
+            
+            // Cada vez que cambia de slide, resetea el scroll de la ventana interior arriba
+            document.querySelector('.presentation-container').scrollTop = 0;
+        }
+
+        function changeSlide(direction) {
+            currentSlide += direction;
+            if (currentSlide < 0) currentSlide = 0;
+            if (currentSlide >= totalSlides) currentSlide = totalSlides - 1;
+            updateSlide();
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            themeBtn.textContent = isLight ? '☀️ Claro' : '🌙 Oscuro';
+        }
+
+        // Navegación con teclado (Flecha izquierda y derecha)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                changeSlide(1);
+            } else if (e.key === 'ArrowLeft') {
+                changeSlide(-1);
+            }
+        });
+
+        // Inicializar estado
+        updateSlide();
+    </script>
+</body>
+</html>

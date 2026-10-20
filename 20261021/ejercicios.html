@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Taller ElectroHogar: consignas</title>
+<style>
+:root{--nav:64px;--ink:#16213E;--paper:#F6F8FC;--blue:#2F5BFF;--tag:#FFC83D;--mint:#12A67F;--rose:#E8456B;--line:#D9E0F0;--soft:#E9EEFB}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--ink);color:var(--ink);overflow:hidden}
+.deck{position:relative;height:100%}
+.slide{position:absolute;top:0;left:0;right:0;bottom:var(--nav);display:none;background:var(--paper);overflow-y:auto;overflow-x:hidden}
+.slide.on{display:flex}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+
+/* portada */
+.cover{flex-direction:column;padding:clamp(20px,4vw,56px) clamp(20px,6vw,88px) 32px;gap:22px}.cover>*{flex-shrink:0}
+.cover h1{font-size:clamp(30px,5vw,58px);line-height:1.05;margin:0;letter-spacing:-.02em}
+.cover .sub{font-size:clamp(16px,1.8vw,21px);margin:0;max-width:62ch;color:#44506f}
+.price{display:inline-block;align-self:flex-start;background:var(--tag);padding:6px 18px 6px 28px;font-weight:800;clip-path:polygon(14px 0,100% 0,100% 100%,14px 100%,0 50%);font-size:15px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.card{background:#fff;border:2px solid var(--line);border-radius:14px;padding:16px 18px}
+.card b{display:block;font-size:18px;margin-bottom:4px}
+.card p{margin:0;font-size:16px;line-height:1.45}
+.rule{background:var(--ink);color:#fff;border-radius:14px;padding:16px 22px;font-size:17px;line-height:1.5;border-left:10px solid var(--tag)}
+.rule b{color:var(--tag)}
+pre{margin:0;background:var(--soft);border-radius:10px;padding:12px 16px;font:15px/1.5 Consolas,Menlo,monospace;overflow:auto}
+
+/* pedidos */
+.ped.on{display:grid;grid-template-columns:clamp(150px,22vw,290px) 1fr;grid-template-rows:minmax(100%,auto)}
+.rail{color:#fff;padding:clamp(18px,3vw,40px) clamp(14px,2vw,28px);display:flex;flex-direction:column;justify-content:space-between;gap:18px}
+.t1 .rail{background:var(--blue)}.t2 .rail{background:var(--mint)}.t3 .rail{background:var(--rose)}
+.tramo{font-size:clamp(15px,1.6vw,19px);line-height:1.3;font-weight:700}
+.tramo small{display:block;font-weight:500;opacity:.92;font-size:.9em;margin-top:4px}
+.tag{background:var(--tag);color:var(--ink);font-weight:900;font-size:clamp(22px,3.2vw,40px);line-height:1;padding:16px 16px 16px 34px;clip-path:polygon(20px 0,100% 0,100% 100%,20px 100%,0 50%)}
+.tag small{display:block;font-size:.38em;font-weight:700;margin-top:6px}
+.body{flex:1;padding:clamp(20px,3.5vw,52px) clamp(18px,4vw,64px) 32px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.area{margin:0;font-size:clamp(16px,1.8vw,21px);font-weight:700;color:#44506f}
+.body h2{margin:0;font-size:clamp(26px,3.6vw,44px);line-height:1.1;letter-spacing:-.015em}
+.consigna{margin:0;font-size:clamp(18px,2vw,25px);line-height:1.5;max-width:60ch}
+.show{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.show span:first-child{font-weight:800;font-size:17px}
+.chip{background:#fff;border:2px solid var(--line);border-radius:999px;padding:6px 16px;font-size:clamp(15px,1.5vw,18px);font-weight:600}
+.must{border-left:8px solid var(--tag);background:#fff;padding:12px 18px;border-radius:0 12px 12px 0;font-size:clamp(16px,1.7vw,20px);line-height:1.45;max-width:62ch}
+.must.sec{border-color:var(--rose)}
+.meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:auto}
+.pill{font-size:15px;font-weight:700;padding:6px 14px;border-radius:999px;background:var(--soft)}
+.pill.f{background:var(--tag)}
+.hintbtn{background:var(--ink);color:#fff;border:0;border-radius:12px;padding:12px 22px;font-weight:800;font-size:17px;align-self:flex-start}
+.hintbtn:disabled{opacity:.45;cursor:default}
+.hints p{margin:10px 0 0;background:#FFF7DB;border:2px solid var(--tag);border-radius:12px;padding:12px 16px;font-size:clamp(16px,1.7vw,19px);line-height:1.45;max-width:62ch}
+.hints p[hidden]{display:none}
+.hints p b{display:block;font-size:14px;margin-bottom:2px}
+
+/* navegación */
+.nav{position:fixed;left:0;right:0;bottom:0;height:var(--nav);z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 clamp(14px,3vw,36px);background:var(--ink);color:#fff}
+.nav button{background:#fff;color:var(--ink);border:0;border-radius:10px;padding:10px 20px;font-weight:800;font-size:16px}
+.nav button:disabled{opacity:.35;cursor:default}
+.dots{display:flex;gap:8px}
+.dots button{width:14px;height:14px;padding:0;border-radius:50%;background:#5d6a8f}
+.dots button[aria-current=true]{background:var(--tag);transform:scale(1.25)}
+.count{font-size:14px;opacity:.85;min-width:56px;text-align:center}
+@media (max-width:720px){.ped.on{grid-template-columns:1fr;grid-template-rows:auto auto}.rail{flex-direction:row;align-items:center}.dots{display:none}}
+@media (prefers-reduced-motion:no-preference){.slide.on{animation:in .25s ease-out}@keyframes in{from{opacity:0}to{opacity:1}}}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+<section class="slide cover on" aria-label="Portada y consideraciones">
+  <span class="price">Taller integrador · Clase 5</span>
+  <h1>ElectroHogar necesita sus informes</h1>
+  <p class="sub">Sos analista técnico de ElectroHogar S.A. Cada área te hace un pedido y tu equipo lo resuelve con SQL en la base ElectroHogarDB.</p>
+  <div class="cards">
+    <div class="card"><b>Guardá tu script</b><p>Cada consulta terminada va a un archivo <code>script_NombreEquipo.sql</code>, comentada con el número de pedido. Lo vamos a usar más adelante.</p></div>
+    <div class="card"><b>Alias descriptivos</b><p>Usá <code>AS</code> para que las columnas del resultado digan qué muestran, por ejemplo <code>nro_factura</code> en lugar de <code>id_venta</code>.</p></div>
+    <div class="card"><b>Tabla.campo</b><p>Usá alias de tabla y la notación <code>tabla.campo</code> para que se vea a qué tabla pertenece cada columna.</p></div>
+    <div class="card"><b>Verificá las filas</b><p>Antes de dar por terminada una consulta, comparen cuántas filas esperan con cuántas devuelve.</p></div>
+  </div>
+  <div class="rule"><b>Regla de oro del GROUP BY:</b> toda columna del SELECT que no esté dentro de una función de agregación (COUNT, SUM, AVG…) debe figurar en el GROUP BY.</div>
+  <pre>SELECT p.nombre_producto AS producto, p.precio_venta
+FROM Productos p;</pre>
+  <p class="sub">Para los Pedidos 4, 5 y 6 completá primero la Ficha de Decisión Técnica. Si te trabás, usá el botón de pista. Navegá con las flechas del teclado.</p>
+</section>
+
+<section class="slide ped t1" aria-label="Pedido 1">
+  <aside class="rail"><div class="tramo">Tramo 1<small>Listados de ventas</small></div><div class="tag">Pedido 1<small>Lo resuelve el docente con vos</small></div></aside>
+  <div class="body">
+    <p class="area">Gerencia de Ventas</p>
+    <h2>Listado de ventas realizadas</h2>
+    <p class="consigna">El departamento de ventas quiere ver un listado de las ventas realizadas, con el nombre de quien hizo cada una.</p>
+    <div class="show"><span>Mostrar:</span><span class="chip">Número de factura</span><span class="chip">Fecha de la venta</span><span class="chip">Nombre del empleado, como <b>vendedor</b></span></div>
+    <div class="meta"><span class="pill">10 min</span></div>
+    <button class="hintbtn">Pedir una pista</button>
+    <div class="hints"><p hidden><b>Pista 1</b>Lo que pide el pedido está repartido en dos tablas. ¿Qué columna de Ventas apunta a la otra tabla? Esa columna es el puente.</p><p hidden><b>Pista 2</b>Mirá el diccionario de datos: una columna de Ventas identifica a quien realizó cada venta.</p></div>
+  </div>
+</section>
+
+<section class="slide ped t1" aria-label="Pedido 2">
+  <aside class="rail"><div class="tramo">Tramo 1<small>Listados de ventas</small></div><div class="tag">Pedido 2</div></aside>
+  <div class="body">
+    <p class="area">Área Comercial</p>
+    <h2>Todas las ventas registradas</h2>
+    <p class="consigna">El área comercial quiere ver todas las ventas registradas junto con el nombre del cliente.</p>
+    <div class="show"><span>Mostrar:</span><span class="chip">Número de factura</span><span class="chip">Fecha</span><span class="chip">Monto total</span><span class="chip">Nombre del cliente</span></div>
+    <div class="must">Es indispensable que aparezcan también las ventas a <b>«Consumidor Final»</b>, es decir, las que no tienen cliente registrado.</div>
+    <div class="meta"><span class="pill">15 min</span></div>
+    <button class="hintbtn">Pedir una pista</button>
+    <div class="hints"><p hidden><b>Pista 1</b>Contá cuántas filas tiene la tabla Ventas y cuántas devuelve tu consulta. ¿Coinciden?</p><p hidden><b>Pista 2</b>Pensá qué debería pasar con una fila de Ventas cuando no encuentra coincidencia en la otra tabla.</p></div>
+  </div>
+</section>
+
+<section class="slide ped t2" aria-label="Pedido 3">
+  <aside class="rail"><div class="tramo">Tramo 2<small>Indicadores de gestión</small></div><div class="tag">Pedido 3</div></aside>
+  <div class="body">
+    <p class="area">Recursos Humanos</p>
+    <h2>Rendimiento de los vendedores</h2>
+    <p class="consigna">Recursos Humanos solicita un informe por empleado, pero solo de quienes hayan realizado <b>más de 1 venta</b>.</p>
+    <div class="show"><span>Mostrar:</span><span class="chip">Identificador del empleado</span><span class="chip">Nombre</span><span class="chip">Cantidad de ventas</span><span class="chip">Monto total vendido</span></div>
+    <div class="meta"><span class="pill">17 min</span></div>
+    <button class="hintbtn">Pedir una pista</button>
+    <div class="hints"><p hidden><b>Pista 1</b>Imaginá las ventas apiladas: antes de poder contar y sumar, hay que ordenarlas en montones, uno por vendedor.</p><p hidden><b>Pista 2</b>«Más de 1 venta» habla de un resultado calculado, no de una fila suelta. ¿Cuándo existe ese resultado?</p></div>
+  </div>
+</section>
+
+<section class="slide ped t2" aria-label="Pedido 4">
+  <aside class="rail"><div class="tramo">Tramo 2<small>Indicadores de gestión</small></div><div class="tag">Pedido 4</div></aside>
+  <div class="body">
+    <p class="area">Gerencia General</p>
+    <h2>Las ventas de mayor importe</h2>
+    <p class="consigna">La gerencia quiere identificar las ventas cuyo monto total sea <b>estrictamente mayor al promedio</b> del monto de todas las ventas. Ordená de mayor a menor monto.</p>
+    <div class="show"><span>Mostrar:</span><span class="chip">Número de factura</span><span class="chip">Fecha</span><span class="chip">Monto total</span><span class="chip">Nombre del cliente</span><span class="chip">Nombre del vendedor</span></div>
+    <div class="must">Ninguna venta que cumpla la condición puede quedar fuera por no tener cliente registrado.</div>
+    <div class="meta"><span class="pill f">Completá la Ficha primero</span><span class="pill">18 min</span></div>
+    <button class="hintbtn">Pedir una pista</button>
+    <div class="hints"><p hidden><b>Pista 1</b>Para comparar cada venta necesitás conocer antes un valor que no está guardado en ninguna tabla.</p><p hidden><b>Pista 2</b>Ese valor se puede obtener con una consulta aparte que mire una sola tabla. ¿Cómo la conectás con tu consulta principal? Y si mañana se registran más ventas, ¿tu resultado seguiría siendo correcto?</p></div>
+  </div>
+</section>
+
+<section class="slide ped t3" aria-label="Pedido 5">
+  <aside class="rail"><div class="tramo">Tramo 3<small>Auditoría y seguridad de la información</small></div><div class="tag">Pedido 5</div></aside>
+  <div class="body">
+    <p class="area">Atención al Cliente</p>
+    <h2>Detalle de cada producto vendido</h2>
+    <p class="consigna">Atención al Cliente necesita ver qué se vendió en cada operación y quién la atendió. Incluí también las ventas a Consumidor Final.</p>
+    <div class="show"><span>Mostrar:</span><span class="chip">Nombre del cliente</span><span class="chip">Fecha de la venta</span><span class="chip">Nombre del vendedor</span><span class="chip">Nombre del producto</span><span class="chip">Cantidad comprada</span></div>
+    <div class="must sec"><b>Restricción de seguridad:</b> por políticas de privacidad, el informe no debe incluir en ningún caso el salario ni la comisión del empleado, ni el costo del proveedor del producto.</div>
+    <div class="meta"><span class="pill f">Completá la Ficha primero</span><span class="pill">15 min</span></div>
+    <button class="hintbtn">Pedir una pista</button>
+    <div class="hints"><p hidden><b>Pista 1</b>Dibujá el camino de claves que une las tablas que necesitás. ¿Cuál queda en el centro del recorrido?</p><p hidden><b>Pista 2</b>Antes de escribir el SELECT, hacé la lista de columnas autorizadas. Lo que no está en la lista no se nombra. Y revisá cuántas filas esperás.</p></div>
+  </div>
+</section>
+
+<section class="slide ped t3" aria-label="Pedido 6">
+  <aside class="rail"><div class="tramo">Tramo 3<small>Auditoría y seguridad de la información</small></div><div class="tag">Pedido 6</div></aside>
+  <div class="body">
+    <p class="area">Auditoría Comercial</p>
+    <h2>Clientes y ventas en un solo listado</h2>
+    <p class="consigna">Auditoría necesita cruzar clientes y ventas en un único listado. Deben aparecer <b>todos los clientes</b>, aunque nunca hayan comprado, y <b>todas las ventas</b>, aunque no tengan cliente registrado.</p>
+    <div class="show"><span>Mostrar:</span><span class="chip">Identificador del cliente</span><span class="chip">Nombre del cliente</span><span class="chip">Número de factura</span><span class="chip">Fecha</span><span class="chip">Monto</span></div>
+    <div class="must">Tengan en cuenta que <b>MySQL no incluye FULL OUTER JOIN</b>.</div>
+    <div class="meta"><span class="pill f">Completá la Ficha primero</span><span class="pill">20 min</span></div>
+    <button class="hintbtn">Pedir una pista</button>
+    <div class="hints"><p hidden><b>Pista 1</b>Si MySQL no trae esa operación, ¿qué dos consultas, una mirando cada lado, cubrirían todos los casos?</p><p hidden><b>Pista 2</b>Existe una forma de apilar los resultados de dos consultas eliminando repetidos. Ojo: en ambas deben coincidir las columnas.</p></div>
+  </div>
+</section>
+
+</div>
+
+<nav class="nav" aria-label="Navegación de diapositivas">
+  <button id="prev">Anterior</button>
+  <div class="dots" id="dots"></div>
+  <span class="count" id="count"></span>
+  <button id="next">Siguiente</button>
+</nav>
+
+<script>
+(function(){
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var dots=document.getElementById('dots'),count=document.getElementById('count');
+  var prev=document.getElementById('prev'),next=document.getElementById('next');
+  var i=0;
+  slides.forEach(function(s,n){
+    var b=document.createElement('button');
+    b.setAttribute('aria-label',s.getAttribute('aria-label'));
+    b.onclick=function(){show(n)};
+    dots.appendChild(b);
+  });
+  function show(n){
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach(function(s,k){s.classList.toggle('on',k===i)});
+    [].forEach.call(dots.children,function(d,k){d.setAttribute('aria-current',k===i)});
+    count.textContent=(i+1)+' / '+slides.length;
+    prev.disabled=i===0;next.disabled=i===slides.length-1;
+    slides[i].scrollTop=0;
+  }
+  prev.onclick=function(){show(i-1)};
+  next.onclick=function(){show(i+1)};
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key==='PageDown')show(i+1);
+    if(e.key==='ArrowLeft'||e.key==='PageUp')show(i-1);
+  });
+  [].forEach.call(document.querySelectorAll('.hintbtn'),function(btn){
+    var ps=[].slice.call(btn.parentNode.querySelectorAll('.hints p')),shown=0;
+    btn.onclick=function(){
+      if(shown<ps.length){ps[shown].hidden=false;shown++;}
+      btn.textContent=shown<ps.length?'Otra pista':'No hay más pistas';
+      btn.disabled=shown>=ps.length;
+    };
+  });
+  show(0);
+})();
+</script>
+</body>
+</html>

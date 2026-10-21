@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lo que pide la letra y que herramienta usar</title>
+  <style>
+    :root {
+      --bg-color: #f1f5f9;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --accent-badge-bg: #e0e7ff;
+      --accent-badge-text: #3730a3;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .presentation-container {
+      width: 100%;
+      max-width: 1100px;
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Header */
+    .header {
+      padding: 24px 32px;
+      background-color: #ffffff;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-info h1 {
+      font-size: 1.35rem;
+      color: var(--text-main);
+      font-weight: 700;
+    }
+
+    .header-info p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .step-badge {
+      background-color: var(--accent-badge-bg);
+      color: var(--accent-badge-text);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    /* Área de Tabla */
+    .table-wrapper {
+      padding: 32px;
+      min-height: 520px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    th {
+      background-color: #f8fafc;
+      color: #334155;
+      font-weight: 700;
+      text-align: left;
+      padding: 14px 18px;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    td {
+      padding: 14px 18px;
+      font-size: 0.92rem;
+      border-bottom: 1px solid var(--border-color);
+      color: #334155;
+      vertical-align: middle;
+      height: 58px;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+
+    .col-signal {
+      width: 35%;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .col-tool {
+      width: 30%;
+    }
+
+    .col-care {
+      width: 35%;
+    }
+
+    /* Efecto de revelado progresivo por celda */
+    .cell-content {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(6px);
+      transition: opacity 0.35s ease, transform 0.35s ease, visibility 0.35s ease;
+      display: inline-block;
+    }
+
+    .cell-content.visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    /* Resaltado suave de la celda recién revelada */
+    .cell-content.just-revealed {
+      color: #1d4ed8;
+      font-weight: 700;
+    }
+
+    code {
+      font-family: 'Consolas', 'Courier New', monospace;
+      background-color: #f1f5f9;
+      color: #0f172a;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border: 1px solid #cbd5e1;
+    }
+
+    /* Footer y Controles */
+    .controls {
+      padding: 18px 32px;
+      background-color: #f8fafc;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      background-color: var(--primary);
+      color: #ffffff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s, opacity 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-secondary {
+      background-color: #e2e8f0;
+      color: #334155;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background-color: #cbd5e1;
+    }
+
+    .btn:hover:not(:disabled) {
+      background-color: var(--primary-hover);
+    }
+
+    .btn:disabled {
+      background-color: #94a3b8;
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .slide-counter {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 4px;
+      background-color: #e2e8f0;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background-color: var(--primary);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="presentation-container">
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+      <div class="header-info">
+        <h1>Lo que pide la letra y que herramienta usar</h1>
+      </div>
+      <div class="step-badge" id="stepBadge">Inicio:</div>
+    </div>
+
+    <!-- Tabla de Presentación -->
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-signal">Señal en el pedido</th>
+            <th class="col-tool">Herramienta</th>
+            <th class="col-care">Observacion</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <!-- Fila 1 -->
+          <tr>
+            <td class="col-signal">
+              <span class="cell-content" data-step="1">Mostrar datos de varias tablas relacionadas</span>
+            </td>
+            <td class="col-tool">
+              <span class="cell-content" data-step="2"><code>JOIN</code></span>
+            </td>
+            <td class="col-care">
+              <span class="cell-content" data-step="3">Solo devuelve las filas que coinciden en ambas tablas.</span>
+            </td>
+          </tr>
+
+          <!-- Fila 2 -->
+          <tr>
+            <td class="col-signal">
+              <span class="cell-content" data-step="4">Que no falte ninguna venta, cliente o producto aunque no tenga datos asociados</span>
+            </td>
+            <td class="col-tool">
+              <span class="cell-content" data-step="5"><code>LEFT JOIN</code> / <code>RIGHT JOIN</code></span>
+            </td>
+            <td class="col-care">
+              <span class="cell-content" data-step="6">Las filas sin coincidencia muestran <code>NULL</code>. Verificar la cantidad de filas.</span>
+            </td>
+          </tr>
+
+          <!-- Fila 3 -->
+          <tr>
+            <td class="col-signal">
+              <span class="cell-content" data-step="7">Todos los registros de ambas tablas</span>
+            </td>
+            <td class="col-tool">
+              <span class="cell-content" data-step="8"><code>LEFT JOIN</code> + <code>RIGHT JOIN</code> + <code>UNION</code></span>
+            </td>
+            <td class="col-care">
+              <span class="cell-content" data-step="9">MySQL no tiene <code>FULL OUTER JOIN</code>. Ambos <code>SELECT</code> deben tener las mismas columnas.</span>
+            </td>
+          </tr>
+
+          <!-- Fila 4 -->
+          <tr>
+            <td class="col-signal">
+              <span class="cell-content" data-step="10">Total, cantidad o por cada grupo</span>
+            </td>
+            <td class="col-tool">
+              <span class="cell-content" data-step="11"><code>GROUP BY</code> con función de agregación (<code>SUM</code>, <code>COUNT</code>)</span>
+            </td>
+            <td class="col-care">
+              <span class="cell-content" data-step="12">Las columnas no agregadas del <code>SELECT</code> van en el <code>GROUP BY</code>.</span>
+            </td>
+          </tr>
+
+          <!-- Fila 5 -->
+          <tr>
+            <td class="col-signal">
+              <span class="cell-content" data-step="13">Solo los que superen un total (condición sobre un grupo)</span>
+            </td>
+            <td class="col-tool">
+              <span class="cell-content" data-step="14"><code>HAVING</code></span>
+            </td>
+            <td class="col-care">
+              <span class="cell-content" data-step="15"><code>WHERE</code> filtra filas antes de agrupar; <code>HAVING</code> filtra los grupos ya calculados.</span>
+            </td>
+          </tr>
+
+          <!-- Fila 6 -->
+          <tr>
+            <td class="col-signal">
+              <span class="cell-content" data-step="16">Mayor o menor que el promedio u otro valor calculado</span>
+            </td>
+            <td class="col-tool">
+              <span class="cell-content" data-step="17">Subconsulta escalar</span>
+            </td>
+            <td class="col-care">
+              <span class="cell-content" data-step="18">Se resuelve de adentro hacia afuera y debe devolver un solo valor.</span>
+            </td>
+          </tr>
+
+          <!-- Fila 7 -->
+          <tr>
+            <td class="col-signal">
+              <span class="cell-content" data-step="19">Informe para un área operativa</span>
+            </td>
+            <td class="col-tool">
+              <span class="cell-content" data-step="20">Mostrar solo las columnas necesarias</span>
+            </td>
+            <td class="col-care">
+              <span class="cell-content" data-step="21">No usar <code>SELECT *</code>. Excluir <code>salario</code>, <code>comision_porcentaje</code> y <code>costo_proveedor</code>.</span>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Controles -->
+    <div class="controls">
+      <div class="btn-group">
+        <button class="btn btn-secondary" id="resetBtn" onclick="goToStep(0)">
+          &#8634; Reiniciar
+        </button>
+        <button class="btn" id="prevBtn" onclick="changeStep(-1)" disabled>
+          &#8592; Anterior
+        </button>
+      </div>
+
+      <span class="slide-counter" id="stepCounter">Paso 0 de 21</span>
+
+      <button class="btn" id="nextBtn" onclick="changeStep(1)">
+        Siguiente &#8594;
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let currentStep = 0;
+    const totalSteps = 21;
+
+    function changeStep(direction) {
+      goToStep(currentStep + direction);
+    }
+
+    function goToStep(step) {
+      currentStep = Math.max(0, Math.min(step, totalSteps));
+      updateView();
+    }
+
+    function updateView() {
+      // Revelar u ocultar celdas según el paso actual
+      const cells = document.querySelectorAll('.cell-content');
+      cells.forEach(cell => {
+        const stepNum = parseInt(cell.getAttribute('data-step'));
+        
+        if (stepNum <= currentStep) {
+          cell.classList.add('visible');
+          // Resaltar suavemente la última celda agregada
+          if (stepNum === currentStep && currentStep > 0) {
+            cell.classList.add('just-revealed');
+          } else {
+            cell.classList.remove('just-revealed');
+          }
+        } else {
+          cell.classList.remove('visible', 'just-revealed');
+        }
+      });
+
+      // Actualizar contador y badge
+      document.getElementById('stepCounter').innerText = `Paso ${currentStep} de ${totalSteps}`;
+      
+      if (currentStep === 0) {
+        document.getElementById('stepBadge').innerText = "Inicio";
+      } else if (currentStep === totalSteps) {
+        document.getElementById('stepBadge').innerText = "Finalizado: Tabla Completa";
+      } else {
+        const row = Math.ceil(currentStep / 3);
+        const colNames = ["Señal", "Herramienta", "Cuidado"];
+        const col = colNames[(currentStep - 1) % 3];
+        document.getElementById('stepBadge').innerText = `Fila ${row} — ${col}`;
+      }
+
+      // Actualizar barra de progreso
+      const progressPercent = (currentStep / totalSteps) * 100;
+      document.getElementById('progressBar').style.width = `${progressPercent}%`;
+
+      // Habilitar / deshabilitar botones
+      document.getElementById('prevBtn').disabled = (currentStep === 0);
+      document.getElementById('nextBtn').disabled = (currentStep === totalSteps);
+    }
+
+    // Control con teclado (Flechas o Barra Espaciadora)
+    document.addEventListener('keydown', function(event) {
+      if ((event.key === "ArrowRight" || event.key === " ") && currentStep < totalSteps) {
+        event.preventDefault();
+        changeStep(1);
+      } else if (event.key === "ArrowLeft" && currentStep > 0) {
+        event.preventDefault();
+        changeStep(-1);
+      }
+    });
+
+    // Inicializar vista
+    updateView();
+  </script>
+
+</body>
+</html>

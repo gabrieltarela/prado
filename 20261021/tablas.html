@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ElectroHogarDB — Contextualización del Sistema</title>
+  <style>
+    :root {
+      --bg-main: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      
+      --badge-warning-bg: #fef3c7;
+      --badge-warning-text: #92400e;
+      --badge-warning-border: #fde68a;
+      
+      --badge-info-bg: #e0e7ff;
+      --badge-info-text: #3730a3;
+      --badge-info-border: #c7d2fe;
+      
+      --badge-danger-bg: #fee2e2;
+      --badge-danger-text: #991b1b;
+      --badge-danger-border: #fca5a5;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      margin: 0;
+      padding: 30px 20px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .header h1 {
+      font-size: 1.8rem;
+      color: #0f172a;
+      margin: 0 0 8px 0;
+    }
+
+    .header p {
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin: 0;
+    }
+
+    /* Leyenda de Casos Particulares */
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      background: var(--card-bg);
+      padding: 16px 20px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      border: 1px solid var(--border-color);
+      margin-bottom: 30px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .badge {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .badge-warning {
+      background-color: var(--badge-warning-bg);
+      color: var(--badge-warning-text);
+      border: 1px solid var(--badge-warning-border);
+    }
+
+    .badge-info {
+      background-color: var(--badge-info-bg);
+      color: var(--badge-info-text);
+      border: 1px solid var(--badge-info-border);
+    }
+
+    .badge-danger {
+      background-color: var(--badge-danger-bg);
+      color: var(--badge-danger-text);
+      border: 1px solid var(--badge-danger-border);
+    }
+
+    /* Grid Layout para las tablas */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 25px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03), 0 2px 4px -1px rgba(0,0,0,0.02);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 14px 20px;
+      background-color: #f1f5f9;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-header h2 {
+      font-size: 1.1rem;
+      margin: 0;
+      color: #0f172a;
+    }
+
+    .card-body {
+      padding: 0;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f8fafc;
+      color: #475569;
+      font-weight: 600;
+      padding: 10px 14px;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-color);
+      color: #334155;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Estilos para columnas sensibles */
+    th.col-sensitive, td.col-sensitive {
+      background-color: #fff1f2;
+    }
+
+    th.col-sensitive {
+      color: #991b1b;
+    }
+
+    /* Filas destacadas */
+    tr.highlight-warning {
+      background-color: #fffbeb;
+    }
+
+    tr.highlight-info {
+      background-color: #eef2ff;
+    }
+
+    .null-value {
+      color: #4f46e5;
+      font-family: monospace;
+      font-weight: 700;
+      background-color: #e0e7ff;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1>ElectroHogarDB — Esquema y Casos Particulares</h1>
+    </div>
+
+    <!-- Leyenda de Casos Particulares -->
+    <div class="legend">
+      <div class="legend-item">
+        <span class="badge badge-warning">Sin Compras / Sin Ventas</span>
+        <span>Registros en tablas maestras sin operaciones asociadas</span>
+      </div>
+      <div class="legend-item">
+        <span class="badge badge-info">Consumidor Final (id_cliente NULL)</span>
+        <span>Venta realizada sin identificar al cliente</span>
+      </div>
+      <div class="legend-item">
+        <span class="badge badge-danger">Dato Sensible</span>
+        <span>Campos de acceso confidencial que deben ser resguardados</span>
+      </div>
+    </div>
+
+    <div class="grid">
+
+      <!-- TABLA CLIENTES -->
+      <div class="card">
+        <div class="card-header">
+          <h2>1. Tabla: Clientes</h2>
+          <span class="badge badge-info">5 Registros</span>
+        </div>
+        <div class="card-body">
+          <table>
+            <thead>
+              <tr>
+                <th>id</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Email</th>
+                <th>Estado / Observación</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>Carlos</td><td>Gómez</td><td>carlos.gomez@email.com</td><td>Con compras</td></tr>
+              <tr><td>2</td><td>Ana</td><td>Martínez</td><td>ana.martinez@email.com</td><td>Con compras</td></tr>
+              <tr><td>3</td><td>Lucía</td><td>Suárez</td><td><span class="null-value">NULL</span></td><td>Con compras</td></tr>
+              <tr><td>4</td><td>Roberto</td><td>Pérez</td><td>roberto.perez@email.com</td><td>Con compras</td></tr>
+              <tr class="highlight-warning">
+                <td><b>5</b></td>
+                <td><b>Diego</b></td>
+                <td><b>Fernández</b></td>
+                <td>diego.f@email.com</td>
+                <td><span class="badge badge-warning">Sin compras</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TABLA EMPLEADOS -->
+      <div class="card">
+        <div class="card-header">
+          <h2>2. Tabla: Empleados</h2>
+          <span class="badge badge-info">4 Registros</span>
+        </div>
+        <div class="card-body">
+          <table>
+            <thead>
+              <tr>
+                <th>id</th>
+                <th>Nombre</th>
+                <th>Departamento</th>
+                <th class="col-sensitive">salario <span class="badge badge-danger">Sensible</span></th>
+                <th class="col-sensitive">comisión <span class="badge badge-danger">Sensible</span></th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>101</td><td>Laura</td><td>Ventas</td><td class="col-sensitive">$45.000</td><td class="col-sensitive">3.5%</td><td>Con ventas</td></tr>
+              <tr><td>102</td><td>Martín</td><td>Ventas</td><td class="col-sensitive">$48.000</td><td class="col-sensitive">4.0%</td><td>Con ventas</td></tr>
+              <tr><td>103</td><td>Gonzalo</td><td>Ventas Directas</td><td class="col-sensitive">$42.000</td><td class="col-sensitive">3.0%</td><td>Con ventas</td></tr>
+              <tr class="highlight-warning">
+                <td><b>104</b></td>
+                <td><b>Elena</b></td>
+                <td>Atención al Cliente</td>
+                <td class="col-sensitive">$40.000</td>
+                <td class="col-sensitive">0.0%</td>
+                <td><span class="badge badge-warning">Sin ventas</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TABLA PRODUCTOS -->
+      <div class="card">
+        <div class="card-header">
+          <h2>3. Tabla: Productos</h2>
+          <span class="badge badge-info">6 Registros</span>
+        </div>
+        <div class="card-body">
+          <table>
+            <thead>
+              <tr>
+                <th>id</th>
+                <th>Producto</th>
+                <th>Precio Venta</th>
+                <th class="col-sensitive">costo_prov <span class="badge badge-danger">Sensible</span></th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>501</td><td>Smart TV 55" 4K</td><td>$28.000</td><td class="col-sensitive">$18.000</td><td>Con ventas</td></tr>
+              <tr><td>502</td><td>Heladera No Frost 320L</td><td>$42.000</td><td class="col-sensitive">$29.000</td><td>Con ventas</td></tr>
+              <tr><td>503</td><td>Lavarropas Automático 8kg</td><td>$31.000</td><td class="col-sensitive">$21.000</td><td>Con ventas</td></tr>
+              <tr><td>504</td><td>Aspiradora Robot</td><td>$15.000</td><td class="col-sensitive">$9.000</td><td>Con ventas</td></tr>
+              <tr class="highlight-warning">
+                <td><b>505</b></td>
+                <td><b>Horno Microondas 25L</b></td>
+                <td>$8.500</td>
+                <td class="col-sensitive">$5.000</td>
+                <td><span class="badge badge-warning">Sin ventas</span></td>
+              </tr>
+              <tr class="highlight-warning">
+                <td><b>506</b></td>
+                <td><b>Cama Elástica Fitness</b></td>
+                <td>$12.000</td>
+                <td class="col-sensitive">$7.000</td>
+                <td><span class="badge badge-warning">Sin ventas</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TABLA VENTAS -->
+      <div class="card">
+        <div class="card-header">
+          <h2>4. Tabla: Ventas</h2>
+          <span class="badge badge-info">6 Registros</span>
+        </div>
+        <div class="card-body">
+          <table>
+            <thead>
+              <tr>
+                <th>id_venta</th>
+                <th>id_cliente</th>
+                <th>id_empleado</th>
+                <th>Fecha</th>
+                <th>Monto Total</th>
+                <th>Estado / Cliente</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>1001</td><td>1</td><td>101</td><td>2026-10-01</td><td>$70.000</td><td>Carlos Gómez</td></tr>
+              <tr><td>1002</td><td>2</td><td>101</td><td>2026-10-02</td><td>$42.000</td><td>Ana Martínez</td></tr>
+              <tr class="highlight-info">
+                <td><b>1003</b></td>
+                <td><span class="null-value">NULL</span></td>
+                <td>102</td>
+                <td>2026-10-03</td>
+                <td>$15.000</td>
+                <td><span class="badge badge-info">Consumidor Final</span></td>
+              </tr>
+              <tr><td>1004</td><td>3</td><td>102</td><td>2026-10-05</td><td>$84.000</td><td>Lucía Suárez</td></tr>
+              <tr><td>1005</td><td>1</td><td>103</td><td>2026-10-10</td><td>$31.000</td><td>Carlos Gómez</td></tr>
+              <tr><td>1006</td><td>4</td><td>101</td><td>2026-10-12</td><td>$28.000</td><td>Roberto Pérez</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

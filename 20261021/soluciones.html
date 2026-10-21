@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Taller ElectroHogar: consignas y soluciones</title>
+<style>
+:root{--nav:64px;--ink:#16213E;--paper:#F6F8FC;--blue:#2F5BFF;--tag:#FFC83D;--mint:#12A67F;--rose:#E8456B;--line:#D9E0F0;--soft:#E9EEFB}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--ink);color:var(--ink);overflow:hidden}
+.deck{position:relative;height:100%}
+.slide{position:absolute;top:0;left:0;right:0;bottom:var(--nav);display:none;background:var(--paper);overflow-y:auto;overflow-x:hidden}
+.slide.on{display:flex}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+
+/* portada */
+.cover{flex-direction:column;padding:clamp(20px,4vw,56px) clamp(20px,6vw,88px) 32px;gap:22px}.cover>*{flex-shrink:0}
+.cover h1{font-size:clamp(30px,5vw,58px);line-height:1.05;margin:0;letter-spacing:-.02em}
+.cover .sub{font-size:clamp(16px,1.8vw,21px);margin:0;max-width:62ch;color:#44506f}
+.price{display:inline-block;align-self:flex-start;background:var(--tag);padding:6px 18px 6px 28px;font-weight:800;clip-path:polygon(14px 0,100% 0,100% 100%,14px 100%,0 50%);font-size:15px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.card{background:#fff;border:2px solid var(--line);border-radius:14px;padding:18px 20px}
+.card b{display:block;font-size:18px;margin-bottom:6px;color:var(--blue)}
+.card p{margin:0;font-size:16px;line-height:1.45}
+.rule{background:var(--ink);color:#fff;border-radius:14px;padding:18px 24px;font-size:17px;line-height:1.5;border-left:10px solid var(--tag)}
+.rule b{color:var(--tag)}
+pre{margin:0;background:var(--soft);border-radius:10px;padding:12px 16px;font:14px/1.45 Consolas,Menlo,monospace;overflow:auto;border:1px solid var(--line)}
+
+/* pedidos y soluciones layout */
+.ped.on, .sol.on{display:grid;grid-template-columns:clamp(150px,22vw,290px) 1fr;grid-template-rows:minmax(100%,auto)}
+.rail{color:#fff;padding:clamp(18px,3vw,40px) clamp(14px,2vw,28px);display:flex;flex-direction:column;justify-content:space-between;gap:18px}
+.t1 .rail{background:var(--blue)}.t2 .rail{background:var(--mint)}.t3 .rail{background:var(--rose)}
+.tramo{font-size:clamp(15px,1.6vw,19px);line-height:1.3;font-weight:700}
+.tramo small{display:block;font-weight:500;opacity:.92;font-size:.9em;margin-top:4px}
+.tag{background:var(--tag);color:var(--ink);font-weight:900;font-size:clamp(20px,3vw,36px);line-height:1.1;padding:16px 16px 16px 30px;clip-path:polygon(18px 0,100% 0,100% 100%,18px 100%,0 50%)}
+.tag small{display:block;font-size:.45em;font-weight:700;margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
+
+.body{flex:1;padding:clamp(20px,3.5vw,48px) clamp(18px,4vw,60px) 32px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.area{margin:0;font-size:clamp(16px,1.8vw,21px);font-weight:700;color:#44506f}
+.body h2{margin:0;font-size:clamp(24px,3.2vw,38px);line-height:1.1;letter-spacing:-.015em}
+.consigna{margin:0;font-size:clamp(17px,1.9vw,23px);line-height:1.45;max-width:60ch}
+.show{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.show span:first-child{font-weight:800;font-size:17px}
+.chip{background:#fff;border:2px solid var(--line);border-radius:999px;padding:6px 16px;font-size:clamp(15px,1.5vw,18px);font-weight:600}
+.must{border-left:8px solid var(--tag);background:#fff;padding:12px 18px;border-radius:0 12px 12px 0;font-size:clamp(16px,1.7vw,20px);line-height:1.45;max-width:62ch}
+.must.sec{border-color:var(--rose)}
+.meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:auto}
+.pill{font-size:15px;font-weight:700;padding:6px 14px;border-radius:999px;background:var(--soft)}
+.pill.f{background:var(--tag)}
+.hintbtn{background:var(--ink);color:#fff;border:0;border-radius:12px;padding:12px 22px;font-weight:800;font-size:17px;align-self:flex-start}
+.hintbtn:disabled{opacity:.45;cursor:default}
+.hints p{margin:10px 0 0;background:#FFF7DB;border:2px solid var(--tag);border-radius:12px;padding:12px 16px;font-size:clamp(16px,1.7vw,19px);line-height:1.45;max-width:62ch}
+.hints p[hidden]{display:none}
+.hints p b{display:block;font-size:14px;margin-bottom:2px}
+
+/* estilos especificos para diapositivas de solución */
+.sol-exp{background:#fff;border-left:6px solid var(--blue);padding:12px 16px;border-radius:0 10px 10px 0;font-size:15px;line-height:1.45;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.sol-exp b{color:var(--ink)}
+.sol-table-wrapper{overflow-x:auto;max-width:100%;margin-top:4px}
+.sol-table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;border:1px solid var(--line);font-size:14px}
+.sol-table th{background:var(--soft);color:var(--ink);padding:8px 12px;text-align:left;border-bottom:2px solid var(--line);font-weight:700}
+.sol-table td{padding:8px 12px;border-bottom:1px solid var(--line);color:#334155}
+.sol-table tr:last-child td{border-bottom:none}
+.sol-table tr:nth-child(even){background:#f8fafc}
+.null-tag{color:#4f46e5;font-family:monospace;font-weight:700;background:#e0e7ff;padding:2px 6px;border-radius:4px;font-size:12px}
+
+/* navegación */
+.nav{position:fixed;left:0;right:0;bottom:0;height:var(--nav);z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 clamp(14px,3vw,36px);background:var(--ink);color:#fff}
+.nav button{background:#fff;color:var(--ink);border:0;border-radius:10px;padding:10px 20px;font-weight:800;font-size:16px}
+.nav button:disabled{opacity:.35;cursor:default}
+.dots{display:flex;gap:6px;flex-wrap:wrap;max-width:60%}
+.dots button{width:12px;height:12px;padding:0;border-radius:50%;background:#5d6a8f;border:none}
+.dots button[aria-current=true]{background:var(--tag);transform:scale(1.25)}
+.count{font-size:14px;opacity:.85;min-width:60px;text-align:center}
+@media (max-width:720px){.ped.on,.sol.on{grid-template-columns:1fr;grid-template-rows:auto auto}.rail{flex-direction:row;align-items:center}.dots{display:none}}
+@media (prefers-reduced-motion:no-preference){.slide.on{animation:in .25s ease-out}@keyframes in{from{opacity:0}to{opacity:1}}}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+<!-- SLIDE 1: COVER -->
+<section class="slide cover on" aria-label="Portada y consideraciones">
+  <span class="price">Taller integrador · Clase 5</span>
+  <h1>Consideraciones antes de comenzar:</h1>
+  <div class="cards">
+    <div class="card">
+      <b>Alias de columnas</b>
+      <p>Usar alias (<code>AS</code>) para que las columnas del resultado tengan nombres descriptivos. Por ejemplo, en el Pedido 1 mostrar <code>nro_factura</code> en lugar de <code>id_venta</code>.</p>
+    </div>
+    <div class="card">
+      <b>Notación tabla.campo</b>
+      <p>Usar alias de tabla y la notación <code>tabla.campo</code> para que quede claro a qué tabla pertenece cada columna.</p>
+    </div>
+  </div>
+  <div class="rule">
+    <b>Regla de oro del GROUP BY:</b> toda columna que aparezca en el <code>SELECT</code> y que no esté dentro de una función de agregación (<code>COUNT</code>, <code>SUM</code>, <code>AVG</code>, etc.) debe figurar obligatoriamente en la cláusula <code>GROUP BY</code>.
+  </div>
+  <pre>SELECT p.nombre_producto AS producto, p.precio_venta
+FROM Productos p;</pre>
+  <p class="sub">Para los Pedidos 4, 5 y 6 completá primero la Ficha de Decisión Técnica. Navegá con las flechas del teclado o los botones.</p>
+</section>
+
+<!-- PEDIDO 1 -->
+<section class="slide ped t1" aria-label="Pedido 1">
+  <aside class="rail"><div class="tramo">Tramo 1<small>Listados de ventas</small></div><div class="tag">Pedido 1</div></aside>
+  <div class="body">
+    <p class="area">Gerencia de Ventas</p>
+    <h2>Listado de ventas realizadas</h2>
+    <p class="consigna">El departamento de ventas quiere ver un listado de las ventas realizadas, con el nombre de quien hizo cada una.</p>
+    <div class="show"><span>Mostrar:</span><span class="chip">Número de factura</span><span class="chip">Fecha de la venta</span><span class="chip">Nombre del empleado, como <b>vendedor</b></span></div>
+    <div class="meta"><span class="pill">10 min</span></div>
+    <button class="hintbtn">Pedir una pista</button>
+    <div class="hints"><p hidden><b>Pista 1</b>Lo que pide el pedido está repartido en dos tablas. ¿Qué columna de Ventas apunta a la otra tabla? Esa columna es el puente.</p><p hidden><b>Pista 2</b>Mirá el diccionario de datos: una columna de Ventas identifica a quien realizó cada venta.</p></div>
+  </div>
+</section>
+
+<!-- SOLUCION 1 -->
+<section class="slide sol t1" aria-label="Solución Pedido 1">
+  <aside class="rail"><div class="tramo">Tramo 1<small>Listados de ventas</small></div><div class="tag">Pedido 1<small>Solución</small></div></aside>
+  <div class="body">
+    <p class="area">Gerencia de Ventas — Consulta SQL & Resultado</p>
+    <pre>SELECT
+  v.id_venta AS nro_factura,
+  v.fecha_venta,
+  e.nombre AS vendedor
+FROM Ventas v
+JOIN Empleados e ON v.id_empleado = e.id_empleado
+ORDER BY v.id_venta;</pre>
+    <div class="sol-exp"><b>Explicación técnica:</b> Consulta de modelado inicial. Relaciona 2 tablas mediante la clave foránea <code>id_empleado</code>. Como toda venta tiene un vendedor asignado (<code>id_empleado</code> es <code>NOT NULL</code>), el <code>JOIN</code> convencional devuelve todas las filas sin descartar ninguna.</div>
+    <div class="sol-table-wrapper">
+      <table class="sol-table">
+        <thead><tr><th>nro_factura</th><th>fecha_venta</th><th>vendedor</th></tr></thead>
+        <tbody>
+          <tr><td>1001</td><td>2026-10-01</td><td>Laura</td></tr>
+          <tr><td>1002</td><td>2026-10-02</td><td>Laura</td></tr>
+          <tr><td>1003</td><td>2026-10-03</td><td>Martín</td></tr>
+          <tr><td>1004</td><td>2026-10-05</td><td>Martín</td></tr>
+          <tr><td>1005</td><td>2026-10-10</td><td>Gonzalo</td></tr>
+          <tr><td>1006</td><td>2026-10-12</td><td>Laura</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- PEDIDO 2 -->
+<section class="slide ped t1" aria-label="Pedido 2">
+  <aside class="rail"><div class="tramo">Tramo 1<small>Listados de ventas</small></div><div class="tag">Pedido 2</div></aside>
+  <div class="body">
+    <p class="area">Área Comercial</p>
+    <h2>Todas las ventas registradas</h2>
+    <p class="consigna">El área comercial quiere ver todas las ventas registradas junto con el nombre del cliente.</p>
+    <div class="show"><span>Mostrar:</span><span class="chip">Número de factura</span><span class="chip">Fecha</span><span class="chip">Monto total</span><span class="chip">Nombre del cliente</span></div>
+    <div class="must">Es indispensable que aparezcan también las ventas a <b>«Consumidor Final»</b>, es decir, las que no tienen cliente registrado.</div>
+    <div class="meta"><span class="pill">15 min</span></div>
+    <button class="hintbtn">Pedir una pista</button>
+    <div class="hints"><p hidden><b>Pista 1</b>Contá cuántas filas tiene la tabla Ventas y cuántas devuelve tu consulta. ¿Coinciden?</p><p hidden><b>Pista 2</b>Pensá qué debería pasar con una fila de Ventas cuando no encuentra coincidencia en la otra tabla.</p></div>
+  </div>
+</section>
+
+<!-- SOLUCION 2 -->
+<section class="slide sol t1" aria-label="Solución Pedido 2">
+  <aside class="rail"><div class="tramo">Tramo 1<small>Listados de ventas</small></div><div class="tag">Pedido 2<small>Solución</small></div></aside>
+  <div class="body">
+    <p class="area">Área Comercial — Consulta SQL & Resultado</p>
+    <pre>SELECT
+  v.id_venta AS nro_factura,
+  v.fecha_venta,
+  v.monto_total,
+  c.nombre AS nombre_cliente
+FROM Ventas v
+LEFT JOIN Clientes c ON v.id_cliente = c.id_cliente
+ORDER BY v.id_venta;</pre>
+    <div class="sol-exp"><b>Explicación técnica:</b> Introduce la preservación de filas sin coincidencia. Con <code>JOIN</code> común la venta 1003 (Consumidor Final, <code>id_cliente NULL</code>) se perdería. <code>LEFT JOIN</code> conserva todas las filas de la tabla izquierda (Ventas).</div>
+    <div class="sol-table-wrapper">
+      <table class="sol-table">
+        <thead><tr><th>nro_factura</th><th>fecha_venta</th><th>monto_total</th><th>nombre_cliente</th></tr></thead>
+        <tbody>
+          <tr><td>1001</td><td>2026-10-01</td><td>70000.00</td><td>Carlos</td></tr>
+          <tr><td>1002</td><td>2026-10-02</td><td>42000.00</td><td>Ana</td></tr>
+          <tr><td>1003</td><td>2026-10-03</td><td>15000.00</td><td><span class="null-tag">NULL</span></td></tr>
+          <tr><td>1004</td><td>2026-10-05</td><td>84000.00</td><td>Lucía</td></tr>
+          <tr><td>1005</td><td>2026-10-10</td><td>31000.00</td><td>Carlos</td></tr>
+          <tr><td>1006</td><td>2026-10-12</td><td>28000.00</td><td>Roberto</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- PEDIDO 3 -->
+<section class="slide ped t2" aria-label="Pedido 3">
+  <aside class="rail"><div class="tramo">Tramo 2<small>Indicadores de gestión</small></div><div class="tag">Pedido 3</div></aside>
+  <div class="body">
+    <p class="area">Recursos Humanos</p>
+    <h2>Rendimiento de los vendedores</h2>
+    <p class="consigna">Recursos Humanos solicita un informe por empleado, pero solo de quienes hayan realizado <b>más de 1 venta</b>.</p>
+    <div class="show"><span>Mostrar:</span><span class="chip">Identificador del empleado</span><span class="chip">Nombre</span><span class="chip">Cantidad de ventas</span><span class="chip">Monto total vendido</span></div>
+    <div class="meta"><span class="pill">17 min</span></div>
+    <button class="hintbtn">Pedir una pista</button>
+    <div class="hints"><p hidden><b>Pista 1</b>Imaginá las ventas apiladas: antes de poder contar y sumar, hay que ordenarlas en montones, uno por vendedor.</p><p hidden><b>Pista 2</b>«Más de 1 venta» habla de un resultado calculated, no de una fila suelta. ¿Cuándo existe ese resultado?</p></div>
+  </div>
+</section>
+
+<!-- SOLUCION 3 -->
+<section class="slide sol t2" aria-label="Solución Pedido 3">
+  <aside class="rail"><div class="tramo">Tramo 2<small>Indicadores de gestión</small></div><div class="tag">Pedido 3<small>Solución</small></div></aside>
+  <div class="body">
+    <p class="area">Recursos Humanos — Consulta SQL & Resultado</p>
+    <pre>SELECT
+  e.id_empleado,
+  e.nombre AS vendedor,
+  COUNT(v.id_venta) AS cantidad_ventas,
+  SUM(v.monto_total) AS monto_total_vendido
+FROM Empleados e
+JOIN Ventas v ON e.id_empleado = v.id_empleado
+GROUP BY e.id_empleado, e.nombre
+HAVING COUNT(v.id_venta) > 1;</pre>
+    <div class="sol-exp"><b>Explicación técnica:</b> La condición sobre el total agrupado (<code>COUNT</code>) no se puede evaluar en <code>WHERE</code> (filtra filas antes de agrupar). Debe ir obligatoriamente en <code>HAVING</code>. Se cumple la regla de incluir en <code>GROUP BY</code> las columnas no agregadas del <code>SELECT</code>.</div>
+    <div class="sol-table-wrapper">
+      <table class="sol-table">
+        <thead><tr><th>id_empleado</th><th>vendedor</th><th>cantidad_ventas</th><th>monto_total_vendido</th></tr></thead>
+        <tbody>
+          <tr><td>101</td><td>Laura</td><td>3</td><td>140000.00</td></tr>
+          <tr><td>102</td><td>Martín</td><td>2</td><td>99000.00</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- PEDIDO 4 -->
+<section class="slide ped t2" aria-label="Pedido 4">
+  <aside class="rail"><div class="tramo">Tramo 2<small>Indicadores de gestión</small></div><div class="tag">Pedido 4</div></aside>
+  <div class="body">
+    <p class="area">Gerencia General</p>
+    <h2>Las ventas de mayor importe</h2>
+    <p class="consigna">La gerencia quiere identificar las ventas cuyo monto total sea <b>estrictamente mayor al promedio</b> del monto de todas las ventas. Ordená de mayor a menor monto.</p>
+    <div class="show"><span>Mostrar:</span><span class="chip">Número de factura</span><span class="chip">Fecha</span><span class="chip">Monto total</span><span class="chip">Nombre del cliente</span><span class="chip">Nombre del vendedor</span></div>
+    <div class="must">Ninguna venta que cumpla la condición puede quedar fuera por no tener cliente registrado.</div>
+    <div class="meta"><span class="pill f">Completá la Ficha primero</span><span class="pill">18 min</span></div>
+    <button class="hintbtn">Pedir una pista</button>
+    <div class="hints"><p hidden><b>Pista 1</b>Para comparar cada venta necesitás conocer antes un valor que no está guardado en ninguna tabla.</p><p hidden><b>Pista 2</b>Ese valor se puede obtener con una consulta aparte que mire una sola tabla. ¿Cómo la conectás con tu consulta principal? Y si mañana se registran más ventas, ¿tu resultado seguiría siendo correcto?</p></div>
+  </div>
+</section>
+
+<!-- SOLUCION 4 -->
+<section class="slide sol t2" aria-label="Solución Pedido 4">
+  <aside class="rail"><div class="tramo">Tramo 2<small>Indicadores de gestión</small></div><div class="tag">Pedido 4<small>Solución</small></div></aside>
+  <div class="body">
+    <p class="area">Gerencia General — Consulta SQL & Resultado</p>
+    <pre>SELECT
+  v.id_venta AS nro_factura,
+  v.fecha_venta,
+  v.monto_total,
+  c.nombre AS nombre_cliente,
+  e.nombre AS vendedor
+FROM Ventas v
+LEFT JOIN Clientes c ON v.id_cliente = c.id_cliente
+JOIN Empleados e ON v.id_empleado = e.id_empleado
+WHERE v.monto_total > (
+  SELECT AVG(monto_total)
+  FROM Ventas
+)
+ORDER BY v.monto_total DESC;</pre>
+    <div class="sol-exp"><b>Explicación técnica:</b> Combina subconsulta escalar en <code>WHERE</code> para calcular dinámicamente el promedio ($45.000). Utiliza <code>LEFT JOIN</code> con Clientes para no descartar ventas a Consumidor Final que superen dicho monto.</div>
+    <div class="sol-table-wrapper">
+      <table class="sol-table">
+        <thead><tr><th>nro_factura</th><th>fecha_venta</th><th>monto_total</th><th>nombre_cliente</th><th>vendedor</th></tr></thead>
+        <tbody>
+          <tr><td>1004</td><td>2026-10-05</td><td>84000.00</td><td>Lucía</td><td>Martín</td></tr>
+          <tr><td>1001</td><td>2026-10-01</td><td>70000.00</td><td>Carlos</td><td>Laura</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- PEDIDO 5 -->
+<section class="slide ped t3" aria-label="Pedido 5">
+  <aside class="rail"><div class="tramo">Tramo 3<small>Auditoría y seguridad de la información</small></div><div class="tag">Pedido 5</div></aside>
+  <div class="body">
+    <p class="area">Atención al Cliente</p>
+    <h2>Detalle de cada producto vendido</h2>
+    <p class="consigna">Atención al Cliente necesita ver qué se vendió en cada operación y quién la atendió. Incluí también las ventas a Consumidor Final.</p>
+    <div class="show"><span>Mostrar:</span><span class="chip">Nombre del cliente</span><span class="chip">Fecha de la venta</span><span class="chip">Nombre del vendedor</span><span class="chip">Nombre del producto</span><span class="chip">Cantidad comprada</span></div>
+    <div class="must sec"><b>Restricción de seguridad:</b> por políticas de privacidad, el informe no debe incluir en ningún caso el salario ni la comisión del empleado, ni el costo del proveedor del producto.</div>
+    <div class="meta"><span class="pill f">Completá la Ficha primero</span><span class="pill">15 min</span></div>
+    <button class="hintbtn">Pedir una pista</button>
+    <div class="hints"><p hidden><b>Pista 1</b>Dibujá el camino de claves que une las tablas que necesitás. ¿Cuál queda en el centro del recorrido?</p><p hidden><b>Pista 2</b>Antes de escribir el SELECT, hacé la lista de columnas autorizadas. Lo que no está en la lista no se nombra. Y revisá cuántas filas esperás.</p></div>
+  </div>
+</section>
+
+<!-- SOLUCION 5 -->
+<section class="slide sol t3" aria-label="Solución Pedido 5">
+  <aside class="rail"><div class="tramo">Tramo 3<small>Auditoría y seguridad de la información</small></div><div class="tag">Pedido 5<small>Solución</small></div></aside>
+  <div class="body">
+    <p class="area">Atención al Cliente — Consulta SQL & Resultado</p>
+    <pre>SELECT
+  c.nombre AS nombre_cliente,
+  v.fecha_venta,
+  e.nombre AS vendedor,
+  p.nombre_producto,
+  dv.cantidad
+FROM Ventas v
+LEFT JOIN Clientes c ON v.id_cliente = c.id_cliente
+JOIN Empleados e ON v.id_empleado = e.id_empleado
+JOIN Detalle_Ventas dv ON v.id_venta = dv.id_venta
+JOIN Productos p ON dv.id_producto = p.id_producto
+ORDER BY v.fecha_venta, v.id_venta;</pre>
+    <div class="sol-exp"><b>Explicación técnica:</b> Integra las 5 tablas de la base mediante relaciones de clave foránea. La seguridad y confidencialidad se garantiza proyectando expresamente solo los campos autorizados y omitiendo <code>SELECT *</code>.</div>
+    <div class="sol-table-wrapper">
+      <table class="sol-table">
+        <thead><tr><th>nombre_cliente</th><th>fecha_venta</th><th>vendedor</th><th>nombre_producto</th><th>cantidad</th></tr></thead>
+        <tbody>
+          <tr><td>Carlos</td><td>2026-10-01</td><td>Laura</td><td>Smart TV 55 4K</td><td>1</td></tr>
+          <tr><td>Carlos</td><td>2026-10-01</td><td>Laura</td><td>Heladera No Frost 320L</td><td>1</td></tr>
+          <tr><td>Ana</td><td>2026-10-02</td><td>Laura</td><td>Heladera No Frost 320L</td><td>1</td></tr>
+          <tr><td><span class="null-tag">NULL</span></td><td>2026-10-03</td><td>Martín</td><td>Aspiradora Robot</td><td>1</td></tr>
+          <tr><td>Lucía</td><td>2026-10-05</td><td>Martín</td><td>Smart TV 55 4K</td><td>3</td></tr>
+          <tr><td>Carlos</td><td>2026-10-10</td><td>Gonzalo</td><td>Lavarropas Automático 8kg</td><td>1</td></tr>
+          <tr><td>Roberto</td><td>2026-10-12</td><td>Laura</td><td>Smart TV 55 4K</td><td>1</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- PEDIDO 6 -->
+<section class="slide ped t3" aria-label="Pedido 6">
+  <aside class="rail"><div class="tramo">Tramo 3<small>Auditoría y seguridad de la información</small></div><div class="tag">Pedido 6</div></aside>
+  <div class="body">
+    <p class="area">Auditoría Comercial</p>
+    <h2>Clientes y ventas en un solo listado</h2>
+    <p class="consigna">Auditoría necesita cruzar clientes y ventas en un único listado. Deben aparecer <b>todos los clientes</b>, aunque nunca hayan comprado, y <b>todas las ventas</b>, aunque no tengan cliente registrado.</p>
+    <div class="show"><span>Mostrar:</span><span class="chip">Identificador del cliente</span><span class="chip">Nombre del cliente</span><span class="chip">Número de factura</span><span class="chip">Fecha</span><span class="chip">Monto</span></div>
+    <div class="must">Tengan en cuenta que <b>MySQL no incluye FULL OUTER JOIN</b>.</div>
+    <div class="meta"><span class="pill f">Completá la Ficha primero</span><span class="pill">20 min</span></div>
+    <button class="hintbtn">Pedir una pista</button>
+    <div class="hints"><p hidden><b>Pista 1</b>Si MySQL no trae esa operación, ¿qué dos consultas, una mirando cada lado, cubrirían todos los casos?</p><p hidden><b>Pista 2</b>Existe una forma de apilar los resultados de dos consultas eliminando repetidos. Ojo: en ambas deben coincidir las columnas.</p></div>
+  </div>
+</section>
+
+<!-- SOLUCION 6 -->
+<section class="slide sol t3" aria-label="Solución Pedido 6">
+  <aside class="rail"><div class="tramo">Tramo 3<small>Auditoría y seguridad de la información</small></div><div class="tag">Pedido 6<small>Solución</small></div></aside>
+  <div class="body">
+    <p class="area">Auditoría Comercial — Consulta SQL & Resultado</p>
+    <pre>SELECT
+  c.id_cliente, c.nombre AS nombre_cliente,
+  v.id_venta AS nro_factura, v.fecha_venta, v.monto_total
+FROM Clientes c LEFT JOIN Ventas v ON c.id_cliente = v.id_cliente
+UNION
+SELECT
+  c.id_cliente, c.nombre AS nombre_cliente,
+  v.id_venta AS nro_factura, v.fecha_venta, v.monto_total
+FROM Clientes c RIGHT JOIN Ventas v ON c.id_cliente = v.id_cliente
+ORDER BY nro_factura;</pre>
+    <div class="sol-exp"><b>Explicación técnica:</b> Simula un <code>FULL OUTER JOIN</code>. Un <code>LEFT JOIN</code> obtiene clientes sin ventas (Diego) y un <code>RIGHT JOIN</code> obtiene ventas sin cliente (1003). <code>UNION</code> apila ambas consultas eliminando las filas duplicadas.</div>
+    <div class="sol-table-wrapper">
+      <table class="sol-table">
+        <thead><tr><th>id_cliente</th><th>nombre_cliente</th><th>nro_factura</th><th>fecha_venta</th><th>monto_total</th></tr></thead>
+        <tbody>
+          <tr><td>5</td><td>Diego</td><td><span class="null-tag">NULL</span></td><td><span class="null-tag">NULL</span></td><td><span class="null-tag">NULL</span></td></tr>
+          <tr><td>1</td><td>Carlos</td><td>1001</td><td>2026-10-01</td><td>70000.00</td></tr>
+          <tr><td>2</td><td>Ana</td><td>1002</td><td>2026-10-02</td><td>42000.00</td></tr>
+          <tr><td><span class="null-tag">NULL</span></td><td><span class="null-tag">NULL</span></td><td>1003</td><td>2026-10-03</td><td>15000.00</td></tr>
+          <tr><td>3</td><td>Lucía</td><td>1004</td><td>2026-10-05</td><td>84000.00</td></tr>
+          <tr><td>1</td><td>Carlos</td><td>1005</td><td>2026-10-10</td><td>31000.00</td></tr>
+          <tr><td>4</td><td>Roberto</td><td>1006</td><td>2026-10-12</td><td>28000.00</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<nav class="nav" aria-label="Navegación de diapositivas">
+  <button id="prev">Anterior</button>
+  <div class="dots" id="dots"></div>
+  <span class="count" id="count"></span>
+  <button id="next">Siguiente</button>
+</nav>
+
+<script>
+(function(){
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var dots=document.getElementById('dots'),count=document.getElementById('count');
+  var prev=document.getElementById('prev'),next=document.getElementById('next');
+  var i=0;
+  slides.forEach(function(s,n){
+    var b=document.createElement('button');
+    b.setAttribute('aria-label',s.getAttribute('aria-label'));
+    b.onclick=function(){show(n)};
+    dots.appendChild(b);
+  });
+  function show(n){
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach(function(s,k){s.classList.toggle('on',k===i)});
+    [].forEach.call(dots.children,function(d,k){d.setAttribute('aria-current',k===i)});
+    count.textContent=(i+1)+' / '+slides.length;
+    prev.disabled=i===0;next.disabled=i===slides.length-1;
+    slides[i].scrollTop=0;
+  }
+  prev.onclick=function(){show(i-1)};
+  next.onclick=function(){show(i+1)};
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key==='PageDown')show(i+1);
+    if(e.key==='ArrowLeft'||e.key==='PageUp')show(i-1);
+  });
+  [].forEach.call(document.querySelectorAll('.hintbtn'),function(btn){
+    var ps=[].slice.call(btn.parentNode.querySelectorAll('.hints p')),shown=0;
+    btn.onclick=function(){
+      if(shown<ps.length){ps[shown].hidden=false;shown++;}
+      btn.textContent=shown<ps.length?'Otra pista':'No hay más pistas';
+      btn.disabled=shown>=ps.length;
+    };
+  });
+  show(0);
+})();
+</script>
+</body>
+</html>

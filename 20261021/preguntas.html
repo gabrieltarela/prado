@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Presentación: Preguntas por Tramo</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              200: '#bae0fd',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            },
+            pastel: {
+              blue: '#eff6ff',
+              indigo: '#eef2ff',
+              emerald: '#ecfdf5',
+              amber: '#fffbeb',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Transiciones suaves para diapositivas */
+    .slide-enter {
+      animation: fadeInSlide 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes fadeInSlide {
+      from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.995);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* Scrollbar personalizada */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Resaltado azul para respuestas */
+    .answer-box {
+      background-color: #eff6ff;
+      border-left: 4px solid #2563eb;
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 3px 0 rgba(37, 99, 235, 0.08);
+    }
+    .answer-text {
+      color: #1e40af;
+      font-weight: 500;
+    }
+    .answer-tag {
+      background-color: #dbeafe;
+      color: #1d4ed8;
+      font-weight: 700;
+      letter-spacing: 0.025em;
+    }
+
+    /* Estilos de código */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      background-color: #f1f5f9;
+      color: #0f172a;
+      padding: 0.15rem 0.4rem;
+      border-radius: 0.25rem;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col justify-between antialiased selection:bg-blue-200 selection:text-blue-900">
+
+  <!-- BARRA DE PROGRESO SUPERIOR -->
+  <div class="fixed top-0 left-0 right-0 z-50 h-1.5 bg-slate-200">
+    <div id="progressBar" class="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-300 ease-out" style="width: 11.11%;"></div>
+  </div>
+
+  <!-- ENCABEZADO Y CONTROLES SUPERIORES -->
+  <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 px-4 py-3 shadow-xs">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-4">
+      
+      <!-- Título de la Aplicación -->
+      <div class="flex items-center space-x-3">
+        <div class="bg-blue-600 text-white p-2 rounded-xl shadow-sm flex items-center justify-center w-10 h-10">
+          <i class="fa-solid fa-graduation-cap text-lg"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-slate-900 text-base leading-tight md:text-lg">Guía de Preguntas por Tramo</h1>
+          <p class="text-xs text-slate-500 hidden sm:block">Consultas SQL, Joins, Agrupaciones y Seguridad</p>
+        </div>
+      </div>
+
+      <!-- Menú Desplegable e Indicadores -->
+      <div class="flex items-center space-x-2 sm:space-x-4">
+        
+        <!-- Selector rápido de Diapositivas -->
+        <div class="relative">
+          <select id="slideSelect" onchange="goToSlide(parseInt(this.value))" class="bg-slate-50 border border-slate-300 text-slate-700 text-xs sm:text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block p-2 pr-8 font-medium cursor-pointer transition">
+            <option value="0">Tramo 1: Pedido 1 (Preguntas iniciales)</option>
+            <option value="1">Tramo 1: Pedido 1 (Cierre y puesta en común)</option>
+            <option value="2">Tramo 1: Pedido 2 y Cierre del Tramo 1</option>
+            <option value="3">Tramo 2: Pedido 3 (Indicadores de gestión)</option>
+            <option value="4">Tramo 2: Pedido 4 (Ficha Técnica y AVG)</option>
+            <option value="5">Tramo 2: Cierre del Tramo 2 (Reflexión)</option>
+            <option value="6">Tramo 3: Pedido 5 (Auditoría y Privacidad)</option>
+            <option value="7">Tramo 3: Pedido 6 (UNION y Joins complejos)</option>
+            <option value="8">Tramo 3: Cierre del Tramo 3 (Seguridad y Vistas)</option>
+          </select>
+        </div>
+
+        <!-- Indicador de Diapositiva -->
+        <span id="slideCounter" class="bg-slate-100 text-slate-700 text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-full border border-slate-200 whitespace-nowrap">
+          Diapositiva 1 de 9
+        </span>
+
+        <!-- Botón Pantalla Completa -->
+        <button onclick="toggleFullscreen()" class="p-2 text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition" title="Modo Pantalla Completa (F)">
+          <i id="fullscreenIcon" class="fa-solid fa-expand text-base"></i>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- CONTENEDOR PRINCIPAL DE DIAPOSITIVAS -->
+  <main class="max-w-5xl mx-auto px-4 py-6 sm:py-8 flex-1 w-full flex flex-col justify-center">
+    
+    <!-- TARJETA DE LA DIAPOSITIVA ACTIVA -->
+    <div id="slideCard" class="bg-white rounded-2xl shadow-xl border border-slate-200/80 p-6 md:p-10 slide-enter min-h-[500px] flex flex-col justify-between">
+      
+      <!-- El contenido dinámico se inyecta desde JavaScript -->
+      <div id="slideContent" class="space-y-6"></div>
+
+    </div>
+
+  </main>
+
+  <!-- BARRA DE NAVEGACIÓN INFERIOR Y CONTROLES -->
+  <footer class="bg-white border-t border-slate-200 py-4 px-4 sticky bottom-0 z-30 shadow-md">
+    <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      
+      <!-- Controles con Teclado Guía -->
+      <div class="text-xs text-slate-500 flex items-center space-x-2 order-2 sm:order-1">
+        <span class="hidden md:inline"><i class="fa-solid fa-keyboard mr-1"></i> Navegación:</span>
+        <kbd class="px-2 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-600 font-mono text-[11px]">←</kbd>
+        <kbd class="px-2 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-600 font-mono text-[11px]">→</kbd>
+        <span class="hidden sm:inline text-slate-400">|</span>
+        <kbd class="hidden sm:inline px-2 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-600 font-mono text-[11px]">Espacio</kbd>
+      </div>
+
+      <!-- Botones Anterior / Siguiente -->
+      <div class="flex items-center space-x-3 w-full sm:w-auto justify-between sm:justify-end order-1 sm:order-2">
+        <button id="btnPrev" onclick="prevSlide()" class="flex-1 sm:flex-none px-5 py-2.5 rounded-xl border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-400 font-semibold text-sm transition-all duration-200 shadow-xs disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white flex items-center justify-center space-x-2">
+          <i class="fa-solid fa-arrow-left"></i>
+          <span>Anterior</span>
+        </button>
+
+        <button id="btnNext" onclick="nextSlide()" class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700 font-semibold text-sm transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center space-x-2">
+          <span>Siguiente</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- LÓGICA DE JAVASCRIPT Y DATOS LITERALES -->
+  <script>
+    // Arreglo completo con el contenido verbatim / literal del documento
+    const slidesData = [
+      {
+        section: "Tramo 1 (minutos 10 a 20)",
+        title: "Pedido 1 (minutos 10 a 20)",
+        subtitle: "Preguntas guiadas para armar la consulta SQL inicial",
+        badge: "Pedido 1",
+        content: `
+          <div class="space-y-6">
+            <!-- Pregunta 1 -->
+            <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+              <h3 class="text-base sm:text-lg font-bold text-slate-800 flex items-start gap-2">
+                <i class="fa-solid fa-circle-question text-blue-600 mt-1"></i>
+                <span>«¿Qué columnas solicita la Gerencia de Ventas?»</span>
+              </h3>
+            </div>
+
+            <!-- Respuesta 1 -->
+            <div class="answer-box p-5 space-y-2">
+              <div class="flex items-center space-x-2">
+                <span class="answer-tag px-2.5 py-0.5 rounded-md text-xs">Respuesta</span>
+              </div>
+              <p class="answer-text text-base sm:text-lg leading-relaxed">
+                el número de factura (id_venta, con el alias nro_factura), la fecha de la venta (fecha_venta) y el nombre del empleado que realizó la venta, que debe aparecer con el alias vendedor.
+              </p>
+            </div>
+
+            <!-- Pregunta 2 -->
+            <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-2">
+              <h3 class="text-base sm:text-lg font-bold text-slate-800 flex items-start gap-2">
+                <i class="fa-solid fa-circle-question text-blue-600 mt-1"></i>
+                <span>«¿En qué tablas se encuentran estas columnas y qué campo las relaciona?».</span>
+              </h3>
+              <p class="text-sm text-slate-600 pl-7">
+                Se guía a los equipos a usar la notación <code>tabla.campo</code> y a definir alias (<code>AS</code>) para que los encabezados del resultado sean claros.
+              </p>
+            </div>
+
+            <!-- Respuesta 2 -->
+            <div class="answer-box p-5 space-y-2">
+              <div class="flex items-center space-x-2">
+                <span class="answer-tag px-2.5 py-0.5 rounded-md text-xs">Respuesta</span>
+              </div>
+              <p class="answer-text text-base sm:text-lg leading-relaxed">
+                id_venta y fecha_venta están en la tabla Ventas y el nombre del empleado está en la tabla Empleados. Las relaciona el campo id_empleado: Ventas.id_empleado (clave foránea) = Empleados.id_empleado (clave primaria). La consulta se arma entonces con Ventas v JOIN Empleados e ON v.id_empleado = e.id_empleado.
+              </p>
+            </div>
+          </div>
+        `
+      },
+      {
+        section: "Tramo 1 (minutos 10 a 20)",
+        title: "Pedido 1 (minutos 10 a 20)",
+        subtitle: "Cierre y puesta en común del Pedido 1",
+        badge: "Puesta en Común",
+        content: `
+          <div class="space-y-6">
+            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl text-emerald-900 text-sm font-medium flex items-center gap-3">
+              <i class="fa-solid fa-clock text-emerald-600 text-lg"></i>
+              <span><strong>Cierre y puesta en común del Pedido 1 (5 min):</strong> Un equipo escribe o proyecta su consulta y el resto de los grupos compara y contrasta su código. Se comprueba que el resultado devuelve exactamente 6 filas.</span>
+            </div>
+
+            <!-- Pregunta de Cierre -->
+            <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+              <h3 class="text-base sm:text-lg font-bold text-slate-800 flex items-start gap-2">
+                <i class="fa-solid fa-comments text-blue-600 mt-1"></i>
+                <span>Pregunta: «Dado que toda venta tiene un vendedor asignado (id_empleado es NOT NULL), ¿por qué el uso de JOIN convencional nos devuelve todas las filas de la tabla Ventas sin perder ningún registro?».</span>
+              </h3>
+            </div>
+
+            <!-- Respuesta de Cierre -->
+            <div class="answer-box p-6 space-y-3">
+              <div class="flex items-center space-x-2">
+                <span class="answer-tag px-2.5 py-0.5 rounded-md text-xs">Respuesta</span>
+              </div>
+              <p class="answer-text text-base sm:text-lg leading-relaxed">
+                porque JOIN solo descarta las filas que no encuentran coincidencia en la otra tabla, y aquí todas la encuentran. id_empleado es NOT NULL y además es clave foránea de Empleados, por lo que cada venta tiene necesariamente un vendedor que existe en esa tabla. Ninguna fila de Ventas queda sin pareja y el resultado conserva las 6 ventas (1001 a 1006). Distinto sería con id_cliente, que admite NULL: ese es el caso del Pedido 2.
+              </p>
+            </div>
+          </div>
+        `
+      },
+      {
+        section: "Tramo 1 (minutos 20 a 45)",
+        title: "Pedido 2 en equipos y Cierre del Tramo 1",
+        subtitle: "minutos 20 a 45",
+        badge: "Tramo 1 Cierre",
+        content: `
+          <div class="space-y-6">
+            <!-- Bloque Pedido 2 -->
+            <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-2">
+              <h3 class="text-md sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-users-gear text-indigo-600"></i>
+                <span>Pedido 2 en equipos (minutos 20 a 38)</span>
+              </h3>
+              <p class="text-slate-700 text-sm leading-relaxed">
+                Se circula y formula preguntas guía sin dar la solución. Se espera que descubran por sí mismos la respuesta.
+              </p>
+            </div>
+
+            <!-- Bloque Cierre del Tramo 1 -->
+            <div class="bg-indigo-50/60 p-5 rounded-xl border border-indigo-100 space-y-3">
+              <h3 class="text-md sm:text-lg font-bold text-indigo-950 flex items-center gap-2">
+                <i class="fa-solid fa-flag-checkered text-indigo-600"></i>
+                <span>Cierre del Tramo 1 (minutos 38 a 45)</span>
+              </h3>
+              <ul class="list-disc list-inside text-sm text-slate-700 space-y-1">
+                <li><strong>Puesta en común (4 min):</strong> un equipo escribe su consulta en el pizarrón y se compara con las de otros equipos.</li>
+                <li><strong>Pregunta de reflexión (3 min):</strong></li>
+              </ul>
+              
+              <div class="pl-4 border-l-2 border-indigo-400 text-slate-800 font-medium text-sm sm:text-base space-y-1">
+                <p>• «Si el Pedido 2 se resuelve con JOIN, ¿cuántas filas devuelve y cuál falta?</p>
+                <p>• ¿Por qué LEFT JOIN conserva la venta 1003?».</p>
+              </div>
+            </div>
+
+            <!-- Respuesta -->
+            <div class="answer-box p-6 space-y-3">
+              <div class="flex items-center space-x-2">
+                <span class="answer-tag px-2.5 py-0.5 rounded-md text-xs">Respuesta</span>
+              </div>
+              <p class="answer-text text-base sm:text-lg leading-relaxed">
+                con JOIN devuelve 5 filas y falta la venta 1003, la venta a Consumidor Final. Esa venta tiene id_cliente NULL, y NULL no es igual a ningún valor, por lo que la condición v.id_cliente = c.id_cliente nunca se cumple para ella y el JOIN la descarta. LEFT JOIN conserva todas las filas de la tabla de la izquierda (Ventas) aunque no tengan coincidencia en Clientes, y completa con NULL las columnas del cliente (nombre_cliente queda en NULL). Así el resultado tiene las 6 ventas.
+              </p>
+            </div>
+          </div>
+        `
+      },
+      {
+        section: "Tramo 2 (minutos 45 a 90)",
+        title: "Tramo 2: Indicadores de gestión, agrupar, filtrar y comparar",
+        subtitle: "Pedido 3 en equipos (minutos 45 a 63)",
+        badge: "Pedido 3",
+        content: `
+          <div class="space-y-5">
+            <p class="text-sm text-slate-600 font-medium">
+              Los equipos resuelven el Pedido 3 directamente en el editor, sin Ficha.
+            </p>
+
+            <!-- Pregunta guía 1 -->
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <h4 class="font-bold text-slate-800 text-sm sm:text-base">Preguntas guía: «¿Qué se cuenta y qué se suma por cada vendedor?»</h4>
+            </div>
+
+            <div class="answer-box p-4 space-y-1">
+              <span class="answer-tag px-2 py-0.5 rounded text-xs">Respuesta</span>
+              <p class="answer-text text-sm sm:text-base leading-relaxed">
+                por cada vendedor se cuenta la cantidad de ventas (COUNT(v.id_venta)) y se suma el monto vendido (SUM(v.monto_total)). Como el resultado debe tener una fila por empleado, se agrupa con GROUP BY e.id_empleado, e.nombre: las columnas no agregadas del SELECT van en el GROUP BY.
+              </p>
+            </div>
+
+            <!-- Pregunta guía 2 -->
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <h4 class="font-bold text-slate-800 text-sm sm:text-base">«¿La condición de más de una venta se puede evaluar antes o después de agrupar?».</h4>
+            </div>
+
+            <div class="answer-box p-4 space-y-1">
+              <span class="answer-tag px-2 py-0.5 rounded text-xs">Respuesta</span>
+              <p class="answer-text text-sm sm:text-base leading-relaxed">
+                después. «Más de una venta es una condición sobre un resultado calculado por grupo (COUNT), que recién existe cuando las filas ya fueron agrupadas. Por eso se escribe en HAVING COUNT(v.id_venta) > 1 y no en WHERE.
+              </p>
+            </div>
+
+            <!-- Detalles extra & Dificultades -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl text-xs sm:text-sm text-emerald-900">
+                <span class="font-bold block text-emerald-800 mb-1"><i class="fa-solid fa-check-circle mr-1"></i> Resultado esperado:</span>
+                2 filas, Laura (101) con 3 ventas y 140000.00 vendidos, y Martín (102) con 2 ventas y 99000.00.
+              </div>
+
+              <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl text-xs sm:text-sm text-amber-900">
+                <span class="font-bold block text-amber-800 mb-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Dificultad esperada:</span>
+                escribir la condición sobre el total en la cláusula WHERE, lo que produce un error de MySQL que los equipos deben interpretar.
+              </div>
+            </div>
+
+            <!-- Respuesta cómo interpretar error -->
+            <div class="answer-box p-4 space-y-1">
+              <span class="answer-tag px-2 py-0.5 rounded text-xs">Respuesta (cómo interpretar el error)</span>
+              <p class="answer-text text-sm sm:text-base leading-relaxed">
+                si la condición se escribe en WHERE, MySQL devuelve «Invalid use of group function». WHERE filtra filas antes de agrupar y en ese momento COUNT todavía no existe. La corrección es mover la condición a HAVING.
+              </p>
+            </div>
+          </div>
+        `
+      },
+      {
+        section: "Tramo 2 (minutos 45 a 90)",
+        title: "Pedido 4 en equipos (minutos 63 a 82)",
+        subtitle: "Ficha de Decisión Técnica y Subconsultas con AVG",
+        badge: "Pedido 4",
+        content: `
+          <div class="space-y-4">
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-700 leading-relaxed">
+              Primera Ficha de Decisión Técnica de los equipos (3 min), seguida de la escritura y verificación de la consulta. 
+              <strong>Preguntas guía:</strong> «¿Qué valor necesitan conocer antes de poder comparar cada venta?» y «¿Qué pasaría si mañana se registraran más ventas y el promedio cambiara?». 
+              <strong>Dificultades esperadas:</strong> usar AVG directamente en el WHERE (error «Invalid use of group function»), escribir el promedio a mano y perder las ventas sin cliente al combinar con la tabla Clientes.
+            </div>
+
+            <!-- Respuesta 1: Valor previo -->
+            <div class="answer-box p-4 space-y-1">
+              <span class="answer-tag px-2 py-0.5 rounded text-xs">Respuesta (¿qué valor necesitan conocer antes de poder comparar cada venta?)</span>
+              <p class="answer-text text-xs sm:text-sm leading-relaxed">
+                el promedio del monto_total de todas las ventas. Ese valor no está guardado en ninguna tabla, por lo que hay que calcularlo con AVG(monto_total) en una subconsulta escalar. Con los datos de prueba es 45000.00 (6 ventas).
+              </p>
+            </div>
+
+            <!-- Respuesta 2: Promedio dinámico -->
+            <div class="answer-box p-4 space-y-1">
+              <span class="answer-tag px-2 py-0.5 rounded text-xs">Respuesta (¿qué pasaría si mañana se registraran más ventas y el promedio cambiara?)</span>
+              <p class="answer-text text-xs sm:text-sm leading-relaxed">
+                si el promedio se hubiera escrito a mano (por ejemplo, > 45000), la consulta quedaría desactualizada y daría resultados incorrectos. Con la subconsulta el promedio se recalcula cada vez que se ejecuta la consulta.
+              </p>
+            </div>
+
+            <!-- Respuesta 3: Solución de dificultades -->
+            <div class="answer-box p-4 space-y-1">
+              <span class="answer-tag px-2 py-0.5 rounded text-xs">Respuesta (dificultades esperadas)</span>
+              <p class="answer-text text-xs sm:text-sm leading-relaxed">
+                usar AVG directamente en el WHERE da el error «Invalid use of group function»; se resuelve calculándolo en una subconsulta: WHERE v.monto_total > (SELECT AVG(monto_total) FROM Ventas). Para no perder ventas sin cliente, Clientes se combina con LEFT JOIN (Empleados puede ir con JOIN, porque id_empleado es NOT NULL); con los datos actuales no se nota, porque la venta 1003 no supera el promedio, pero el requerimiento lo exige. Resultado esperado: 2 filas, la 1004 (84000.00, Lucía, vendedor Martín) y la 1001 (70000.00, Carlos, vendedor Laura), ordenadas de mayor a menor monto.
+              </p>
+            </div>
+          </div>
+        `
+      },
+      {
+        section: "Tramo 2 (minutos 45 a 90)",
+        title: "Cierre del Tramo 2 (minutos 82 a 90)",
+        subtitle: "Puesta en común con dos preguntas de reflexión",
+        badge: "Cierre Tramo 2",
+        content: `
+          <div class="space-y-5">
+            <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-xl text-indigo-900 font-medium text-sm">
+              <i class="fa-solid fa-lightbulb text-indigo-600 mr-2"></i> Puesta en común con dos preguntas de reflexión
+            </div>
+
+            <!-- Pregunta Reflexión 1 -->
+            <div class="space-y-2">
+              <h4 class="font-bold text-slate-800 text-sm sm:text-base">
+                «¿Por qué la condición sobre COUNT(...) debe escribirse en HAVING y no en WHERE?»
+              </h4>
+              <div class="answer-box p-4 space-y-1">
+                <span class="answer-tag px-2 py-0.5 rounded text-xs">Respuesta</span>
+                <p class="answer-text text-xs sm:text-sm leading-relaxed">
+                  porque WHERE filtra filas individuales antes de agrupar, y COUNT(...) es un resultado que recién existe cuando los grupos ya fueron formados por GROUP BY. HAVING filtra los grupos ya calculados, y por eso allí sí se puede usar una función de agregación (HAVING COUNT(v.id_venta) > 1). Escribirla en WHERE produce un error de MySQL.
+                </p>
+              </div>
+            </div>
+
+            <!-- Pregunta Reflexión 2 -->
+            <div class="space-y-2">
+              <h4 class="font-bold text-slate-800 text-sm sm:text-base">
+                «¿Por qué el promedio se calcula con una subconsulta y no se escribe el valor a mano?». <span class="text-xs font-normal text-slate-600 block sm:inline">Se indaga oralmente si notaron consultas o combinaciones de tablas que tuvieron que volver a escribir idénticas.</span>
+              </h4>
+              <div class="answer-box p-4 space-y-1">
+                <span class="answer-tag px-2 py-0.5 rounded text-xs">Respuesta</span>
+                <p class="answer-text text-xs sm:text-sm leading-relaxed">
+                  porque el promedio no está guardado en ninguna tabla y cambia cada vez que se registran, modifican o eliminan ventas. La subconsulta lo calcula en el momento (se resuelve de adentro hacia afuera) y la consulta principal compara cada venta con ese valor, de modo que el resultado siempre está actualizado. Un número escrito a mano quedaría desactualizado.
+                </p>
+              </div>
+
+              <div class="answer-box p-4 space-y-1">
+                <span class="answer-tag px-2 py-0.5 rounded text-xs">Respuesta (consultas repetidas)</span>
+                <p class="answer-text text-xs sm:text-sm leading-relaxed">
+                  sí, la combinación de Ventas con Clientes y Empleados hubo que escribirla de nuevo en los Pedidos 1, 2, 4 y 5. Esa repetición es la necesidad de reutilización que se retoma en el puente a la Clase 6 (Vistas).
+                </p>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      {
+        section: "Tramo 3 (minutos 90 a 135)",
+        title: "Tramo 3: Auditoría y seguridad de la información",
+        subtitle: "Pedido 5 en equipos (minutos 90 a 108)",
+        badge: "Pedido 5",
+        content: `
+          <div class="space-y-5">
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <p class="text-sm text-slate-700">
+                <strong>Ficha de Decisión Técnica (3 min)</strong>, con atención al apartado de privacidad: qué columnas sensibles tienen las tablas involucradas.?
+              </p>
+            </div>
+
+            <!-- Respuesta Privacidad -->
+            <div class="answer-box p-5 space-y-2">
+              <div class="flex items-center space-x-2">
+                <span class="answer-tag px-2.5 py-0.5 rounded-md text-xs">Respuesta (privacidad)</span>
+              </div>
+              <p class="answer-text text-sm sm:text-base leading-relaxed">
+                la tabla Empleados tiene salario y comision_porcentaje, y la tabla Productos tiene costo_proveedor. Se evita mostrarlos no usando SELECT * y listando solo las columnas autorizadas: c.nombre, v.fecha_venta, e.nombre, p.nombre_producto y dv.cantidad. Las tablas necesarias son Ventas, Clientes, Empleados, Detalle_Ventas y Productos.
+              </p>
+            </div>
+
+            <!-- Verificación -->
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <p class="text-xs sm:text-sm text-slate-700">
+                Se verifica que no se use SELECT * y que el resultado tenga 7 filas, incluida la venta a Consumidor Final.
+              </p>
+            </div>
+
+            <!-- Respuesta Filas -->
+            <div class="answer-box p-5 space-y-2">
+              <div class="flex items-center space-x-2">
+                <span class="answer-tag px-2.5 py-0.5 rounded-md text-xs">Respuesta</span>
+              </div>
+              <p class="answer-text text-sm sm:text-base leading-relaxed">
+                el resultado tiene 7 filas y no 6 porque la venta 1001 incluye dos productos (Smart TV 55 4K y Heladera No Frost 320L), y cada producto vendido es una fila de Detalle_Ventas. La venta a Consumidor Final (1003) aparece con nombre_cliente NULL gracias a que Clientes se combina con LEFT JOIN.
+              </p>
+            </div>
+          </div>
+        `
+      },
+      {
+        section: "Tramo 3 (minutos 90 a 135)",
+        title: "Pedido 6 en equipos (minutos 108 a 127)",
+        subtitle: "Simulación de FULL OUTER JOIN utilizando UNION",
+        badge: "Pedido 6",
+        content: `
+          <div class="space-y-4">
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-700">
+              Ficha de Decisión Técnica (3 min) y escritura de la consulta. Es el pedido de mayor exigencia. Ayudas graduadas, solo si el equipo lo necesita:
+            </div>
+
+            <!-- Ayuda 1 -->
+            <div class="space-y-2">
+              <div class="bg-slate-100 p-3 rounded-lg border border-slate-200 text-xs sm:text-sm font-semibold text-slate-800">
+                (1) «MySQL no tiene FULL OUTER JOIN: ¿qué dos consultas, una por cada lado, cubren todos los casos?»;
+              </div>
+              <div class="answer-box p-4 space-y-1">
+                <span class="answer-tag px-2 py-0.5 rounded text-xs">Respuesta</span>
+                <p class="answer-text text-xs sm:text-sm leading-relaxed">
+                  una consulta con LEFT JOIN de Clientes a Ventas, que trae todos los clientes (incluido Diego, que no tiene compras), y otra con RIGHT JOIN, que trae todas las ventas (incluida la 1003, que no tiene cliente).
+                </p>
+              </div>
+            </div>
+
+            <!-- Ayuda 2 -->
+            <div class="space-y-2">
+              <div class="bg-slate-100 p-3 rounded-lg border border-slate-200 text-xs sm:text-sm font-semibold text-slate-800">
+                (2) «¿Cómo se pueden apilar los resultados de dos consultas eliminando las filas repetidas?». Se verifica que el resultado tenga 7 filas: un cliente sin compras y una venta sin cliente.
+              </div>
+              <div class="answer-box p-4 space-y-1">
+                <span class="answer-tag px-2 py-0.5 rounded text-xs">Respuesta</span>
+                <p class="answer-text text-xs sm:text-sm leading-relaxed">
+                  con UNION, que apila los resultados de las dos consultas y elimina las filas repetidas (las de los clientes con ventas, que aparecen en ambas). Con UNION ALL esas filas se duplicarían. Ambos SELECT deben tener las mismas columnas y en el mismo orden. Resultado esperado: 7 filas, 5 con coincidencia más Diego (cliente sin compras) y la venta 1003 (sin cliente).
+                </p>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      {
+        section: "Tramo 3 (minutos 90 a 135)",
+        title: "Cierre del Tramo 3 (minutos 127 a 135)",
+        subtitle: "Reflexión final sobre seguridad y la necesidad de Vistas",
+        badge: "Cierre Tramo 3",
+        content: `
+          <div class="space-y-5">
+            <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-xl text-indigo-950 font-medium text-sm">
+              <i class="fa-solid fa-shield-halved text-indigo-600 mr-2"></i> Cierre del Tramo 3 (minutos 127 a 135)
+            </div>
+
+            <!-- Pregunta Reflexión 1 -->
+            <div class="space-y-2">
+              <h4 class="font-bold text-slate-800 text-sm sm:text-base">
+                Puesta en común con la pregunta de reflexión: «El informe del Pedido 5 lo usará Atención al Cliente. Omitir el salario y el costo en el SELECT, ¿alcanza para protegerlos?
+              </h4>
+              <div class="answer-box p-5 space-y-2">
+                <span class="answer-tag px-2.5 py-0.5 rounded-md text-xs">Respuesta</span>
+                <p class="answer-text text-sm sm:text-base leading-relaxed">
+                  no alcanza. Omitir las columnas en el SELECT protege solo ese informe: los datos siguen guardados en las tablas base y accesibles para cualquiera con permiso de lectura sobre ellas. La protección depende de cómo se escribe cada consulta y no de la base de datos.
+                </p>
+              </div>
+            </div>
+
+            <!-- Pregunta Reflexión 2 -->
+            <div class="space-y-2">
+              <h4 class="font-bold text-slate-800 text-sm sm:text-base">
+                ¿Qué verían si tuvieran permiso de lectura sobre las tablas Empleados y Productos y ejecutaran un SELECT * por su cuenta?».
+              </h4>
+              <div class="answer-box p-5 space-y-2">
+                <span class="answer-tag px-2.5 py-0.5 rounded-md text-xs">Respuesta</span>
+                <p class="answer-text text-sm sm:text-base leading-relaxed">
+                  verían todo el contenido de ambas tablas, incluidos el salario y la comision_porcentaje de todos los empleados y el costo_proveedor de todos los productos. Por eso hace falta un mecanismo que permita consultar el informe sin dar permiso de lectura sobre las tablas base: las Vistas (VIEWS), que se trabajan en la Clase 6.
+                </p>
+              </div>
+            </div>
+          </div>
+        `
+      }
+    ];
+
+    // Estado global de la aplicación
+    let currentSlideIndex = 0;
+
+    // Renderizar Diapositiva
+    function renderSlide(index) {
+      if (index < 0 || index >= slidesData.length) return;
+
+      currentSlideIndex = index;
+      const data = slidesData[index];
+
+      // Animación suave re-inyectando la clase
+      const slideCard = document.getElementById('slideCard');
+      slideCard.classList.remove('slide-enter');
+      void slideCard.offsetWidth; // Forzar reflow
+      slideCard.classList.add('slide-enter');
+
+      // Actualizar Encabezado de la diapositiva
+      const slideContent = document.getElementById('slideContent');
+      slideContent.innerHTML = `
+        <div class="border-b border-slate-100 pb-4 mb-4">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <span class="text-xs font-semibold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-100">
+              ${data.badge}
+            </span>
+            <span class="text-xs text-slate-400 font-medium">${data.section}</span>
+          </div>
+          <h2 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
+            ${data.title}
+          </h2>
+          ${data.subtitle ? `<p class="text-slate-500 text-xs sm:text-sm mt-1">${data.subtitle}</p>` : ''}
+        </div>
+
+        <div>
+          ${data.content}
+        </div>
+      `;
+
+      // Actualizar Contadores e Interfaz
+      document.getElementById('slideCounter').innerText = `Diapositiva ${index + 1} de ${slidesData.length}`;
+      document.getElementById('slideSelect').value = index;
+
+      // Actualizar Barra de Progreso
+      const percentage = ((index + 1) / slidesData.length) * 100;
+      document.getElementById('progressBar').style.width = `${percentage}%`;
+
+      // Estado de botones Anterior / Siguiente
+      document.getElementById('btnPrev').disabled = (index === 0);
+      document.getElementById('btnNext').disabled = (index === slidesData.length - 1);
+      
+      // Ajustar texto del botón Siguiente si es la última diapositiva
+      const btnNextSpan = document.getElementById('btnNext').querySelector('span');
+      if (index === slidesData.length - 1) {
+        btnNextSpan.innerText = "Fin";
+      } else {
+        btnNextSpan.innerText = "Siguiente";
+      }
+
+      // Scroll arriba suave si el contenido es extenso
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Navegación
+    function nextSlide() {
+      if (currentSlideIndex < slidesData.length - 1) {
+        renderSlide(currentSlideIndex + 1);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlideIndex > 0) {
+        renderSlide(currentSlideIndex - 1);
+      }
+    }
+
+    function goToSlide(index) {
+      renderSlide(index);
+    }
+
+    // Control por Teclado
+    document.addEventListener('keydown', function(event) {
+      // Evitar interferencia con elementos interactivos si los hubiera
+      if (['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+      if (event.key === 'ArrowRight' || event.key === ' ') {
+        event.preventDefault();
+        nextSlide();
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        prevSlide();
+      } else if (event.key === 'f' || event.key === 'F') {
+        toggleFullscreen();
+      }
+    });
+
+    // Modo Pantalla Completa
+    function toggleFullscreen() {
+      const icon = document.getElementById('fullscreenIcon');
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().then(() => {
+          icon.classList.remove('fa-expand');
+          icon.classList.add('fa-compress');
+        }).catch(err => {
+          console.error(`Error al activar pantalla completa: ${err.message}`);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().then(() => {
+            icon.classList.remove('fa-compress');
+            icon.classList.add('fa-expand');
+          });
+        }
+      }
+    }
+
+    // Inicialización al cargar la página
+    window.onload = function() {
+      renderSlide(0);
+    };
+  </script>
+</body>
+</html>

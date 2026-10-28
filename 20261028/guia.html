@@ -1,0 +1,109 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Guía expositiva: vistas en MySQL</title>
+<style>
+:root{--ink:#1d2340;--soft:#5b6384;--bg:#f4f7ff;--ac:#6d4aff;--ac2:#2f80ff}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%}
+body{font-family:"Trebuchet MS","Segoe UI",Verdana,sans-serif;color:var(--ink);background:var(--bg);display:flex;flex-direction:column;min-height:100vh}
+code,pre{font-family:Consolas,"Courier New",monospace}
+code{background:#eef0ff;color:#4b2fd6;padding:1px 6px;border-radius:6px;font-size:.92em}
+header{padding:12px 20px;background:linear-gradient(100deg,var(--ac),var(--ac2));color:#fff;display:flex;gap:14px;align-items:center;flex-wrap:wrap;transition:background .3s}
+header b{flex:1;min-width:180px;font-size:1.02rem}
+.sec{background:#fff;color:var(--ac);font-weight:800;border-radius:99px;padding:4px 14px;font-size:.88rem}
+.bar{height:7px;background:rgba(255,255,255,.35);flex-basis:100%;border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:#fff;transition:width .3s}
+main{flex:1;width:100%;max-width:1000px;margin:0 auto;padding:22px 16px 8px}
+.hero{display:flex;gap:16px;align-items:center;margin-bottom:16px}
+.num{flex:none;min-width:70px;height:70px;padding:0 10px;border-radius:22px;background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;font-size:1.9rem;font-weight:800;display:grid;place-items:center;box-shadow:0 7px 0 rgba(0,0,0,.12)}
+h2{margin:0;font-size:1.9rem;line-height:1.15}
+.big{background:#fff;border-left:8px solid var(--ac);border-radius:14px;padding:16px 20px;font-size:1.25rem;line-height:1.55;margin-bottom:14px;box-shadow:0 2px 10px rgba(30,40,90,.08)}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:12px}
+.card{background:#fff;border-radius:16px;padding:16px 20px;box-shadow:0 2px 10px rgba(30,40,90,.08);line-height:1.55;font-size:1.05rem;border-top:6px solid var(--ac)}
+.card h3{margin:0 0 6px;font-size:1.2rem;color:var(--ac)}.card.b{border-top-color:var(--ac2)}.card.b h3{color:var(--ac2)}
+.flow{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;margin:14px 0}
+.flow div{flex:1;min-width:180px;background:#fff;border:3px solid var(--ac);border-radius:16px;padding:12px 14px;text-align:center;line-height:1.4}
+.flow div.v{border-style:dashed;border-color:var(--ac2);background:#eef4ff}
+.flow span{align-self:center;font-size:1.8rem;color:var(--ac);font-weight:800}
+pre{background:#1d2340;color:#e9edff;border-radius:14px;padding:14px 18px;overflow:auto;margin:0 0 12px;font-size:1.05rem;line-height:1.6}
+.k{color:#ffd23f;font-weight:700}
+table{border-collapse:collapse;width:100%;font-size:.92rem}td,th{border-bottom:1px solid #e3e7fb;padding:4px 6px;text-align:left}th{color:var(--ac)}
+.q{background:#fff;border-radius:14px;padding:12px 16px;margin-bottom:10px;box-shadow:0 2px 8px rgba(30,40,90,.07);font-size:1.1rem;line-height:1.5}
+.tg{border:0;border-radius:10px;background:#ffd23f;font:inherit;font-weight:800;padding:5px 12px;margin-top:8px;cursor:pointer;color:var(--ink);box-shadow:0 3px 0 rgba(0,0,0,.14)}
+.ans{display:none;background:#e6fbf6;border:2px solid #4de1c1;border-radius:10px;padding:8px 12px;margin-top:8px}.ans.open{display:block}
+.note{margin-top:14px;background:#fff6cc;border:2px dashed #e6b800;border-radius:12px;padding:10px 14px;line-height:1.5}
+footer{display:flex;justify-content:space-between;gap:10px;padding:12px 20px 18px;max-width:1000px;width:100%;margin:0 auto}
+footer button{border:0;border-radius:14px;padding:12px 20px;font:inherit;font-weight:800;cursor:pointer;color:#fff;background:linear-gradient(100deg,var(--ac),var(--ac2));box-shadow:0 5px 0 rgba(0,0,0,.18);max-width:48%}
+footer button:disabled{visibility:hidden}footer button:active{transform:translateY(3px)}
+button:focus-visible{outline:3px solid #1d2340;outline-offset:2px}
+@media(max-width:600px){h2{font-size:1.4rem}.num{min-width:54px;height:54px;font-size:1.4rem}.big{font-size:1.1rem}}
+</style></head><body>
+<header><b>Vistas en MySQL</b><span class="sec" id="sec"></span><div class="bar"><i id="pg"></i></div></header>
+<main id="m"></main>
+<footer><button id="pv"></button><button id="nx"></button></footer>
+<script>
+const P='<span class="k">',E='</span>';
+const S=[
+{sec:'Inicio',n:'1',t:'Creación y uso de vistas en MySQL',c:'#6d4aff',c2:'#2f80ff',
+ h:`<div class="big">Clase 6 de la unidad “Consultas SQL avanzadas”. Retomamos el Taller Integrador de la Clase 5.</div>
+ <div class="g"><div class="card"><h3></h3></div><div class="card b"><h3></h3></div><div class="card"><h3></h3></div><div class="card b"><h3></h3></div></div>`,
+ nt:'.'},
+{sec:'',n:'2',t:'Dos problemas que dejó el taller',c:'#ff4d6d',c2:'#ff9f1c',
+ h:`<div class="g"><div class="card"><h3>1. Repetir la consulta</h3>Para un reporte rutinario hay que volver a escribir (o ejecutar) la misma consulta compleja una y otra vez.</div>
+ <div class="card b"><h3>2. Columna confidencial</h3>Un área, como Adscripción, necesita consultar estudiantes <b>sin ver</b> columnas como <code>clave_hash</code>.</div></div>`,
+ nt:''},
+{sec:'',n:'3',t:'¿Qué se les ocurre?',c:'#ff9f1c',c2:'#e83e8c',
+ h:`<div class="big">¿Qué se podría hacer para resolver estos dos problemas?</div>`,
+ nt:''},
+{sec:'',n:'4',t:'Analogía: el menú del restaurante',c:'#06b6a4',c2:'#2f80ff',
+ h:`<div class="g"><div class="card"><h3>El menú ≈ la vista</h3>Lo que se le presenta al cliente: nombres y descripciones, no la cocina.</div><div class="card b"><h3>El plato real ≈ la tabla base</h3>Se elabora en la cocina con todos sus ingredientes.</div></div>
+ <div class="g"><div class="card"><h3>Diferencias</h3>• El menú no es el plato.<br>• No muestra todos los ingredientes (columnas ocultas).<br>• Cada vez que se pide, se prepara el plato de ese momento (datos actuales).</div></div>`,
+ nt:'En qué se parecen y en qué se diferencian el menú y el plato.'},
+{sec:'',n:'5',t:'Qué es una vista',c:'#6d4aff',c2:'#2f80ff',
+ h:`<div class="big">Una vista es una <b>consulta SELECT guardada con un nombre</b>. Su resultado se usa como una <b>tabla virtual</b>.</div>
+ <div class="flow"><div><b>Tabla base</b><br>los datos reales</div><span>→</span><div class="v"><b>Vista</b><br>solo guarda el SELECT</div><span>→</span><div><b>Resultado</b><br>tabla virtual</div></div>
+ <div class="card"><h3>No copia los datos</h3>Se evalúa cada vez que se la invoca, por eso refleja siempre el estado actual de la tabla origen.</div>`,
+ nt:''},
+{sec:'',n:'6',t:'Sintaxis: crear y consultar',c:'#2f80ff',c2:'#06b6a4',
+ h:`<pre>${P}CREATE VIEW${E} nombre_vista ${P}AS${E}
+${P}SELECT${E} ... ${P}FROM${E} ...;</pre>
+ <pre>${P}SELECT${E} ... ${P}FROM${E} nombre_vista;</pre>`,
+ nt:''},
+{sec:'',n:'7',t:'Para qué sirve',c:'#ff4d6d',c2:'#6d4aff',
+ h:`<div class="g"><div class="card"><h3>Evita reescribir</h3>Una consulta compleja (JOIN, agrupamientos) queda guardada: se usa con un SELECT simple.</div>
+ <div class="card b"><h3>Restringe columnas</h3>Proyecta solo lo necesario y omite datos privados o sensibles.</div></div>
+ <div class="note"><b>Ojo:</b> limitar de verdad el acceso requiere además permisos a nivel de base de datos (<code></code>). Hoy solo lo mencionamos.</div>`,
+ nt:''},
+{sec:'',n:'8',t:'Se maneja como una tabla',c:'#e83e8c',c2:'#ff9f1c',
+ h:`<div class="big">A una vista se le aplican las mismas sentencias de consulta que a una tabla: <code>SELECT</code>, <code>WHERE</code>, <code>JOIN</code>, etc.</div>`,
+ nt:''},
+{sec:'',n:'9',t:'Preguntas',c:'#06b6a4',c2:'#6d4aff',
+ h:`<div class="q">¿Qué guarda una vista: los datos o la consulta?<br><button class="tg">Mostrar respuesta</button><div class="ans">La consulta (el SELECT). Los datos siguen en la tabla base.</div></div>
+ <div class="q">Si agrego un registro a la tabla base, ¿hay que volver a crear la vista?<br><button class="tg">Mostrar respuesta</button><div class="ans">No. La vista se evalúa en cada SELECT y refleja el estado actual.</div></div>
+ <div class="q">¿Puedo hacer un JOIN entre una tabla y una vista? ¿Por qué?<br><button class="tg">Mostrar respuesta</button><div class="ans">Sí, porque una vista se maneja como una tabla virtual.</div></div>`,
+ nt:''},
+{sec:'Ejemplo',n:'10',t:'Ejemplo: el requerimiento',c:'#ff9f1c',c2:'#ff4d6d',
+ h:`<div class="big">“Secretaría necesita ver, de cada estudiante, el nombre y el email, pero no datos privados como la contraseña.”</div>
+ <pre>${P}CREATE VIEW${E} v_estudiante ${P}AS${E}
+${P}SELECT${E} e.nombre, e.email
+${P}FROM${E} estudiantes e;</pre>`,
+ nt:''},
+{sec:'Ejemplo',n:'11',t:'Ejemplo: verificar',c:'#2f80ff',c2:'#06b6a4',
+ h:`<pre>${P}SELECT${E} * ${P}FROM${E} v_estudiante;</pre>
+ <div class="g"><div class="card"><h3>SELECT * FROM v_estudiante</h3><table><tr><th>nombre</th><th>email</th></tr><tr><td>Juan Pérez</td><td>juan@utu.edu.uy</td></tr><tr><td>María López</td><td>maria@utu.edu.uy</td></tr><tr><td>…</td><td>…</td></tr></table></div>
+ <div class="card b"><h3>SELECT * FROM estudiantes</h3><table><tr><th>…</th><th>email</th><th>clave_hash</th><th>…</th></tr><tr><td>…</td><td>juan@utu.edu.uy</td><td>$2y$10$e839…</td><td>…</td></tr></table></div></div>
+ <div class="note">Ejecuten <code>DESCRIBE estudiantes;</code> y <code>DESCRIBE v_estudiante;</code> y comparen los campos. La vista solo tiene <code>nombre</code> y <code>email</code>.</div>`,
+ nt:'La vista restringe lo que se proyecta; la columna clave_hash sigue en la tabla base.'},
+{sec:'Práctica',n:'12',t:'Ahora les toca a ustedes',c:'#6d4aff',c2:'#e83e8c',
+ h:`<div class="big">Resuelvan en grupos los <b>Ejercicios 1 y 2</b></div>
+ <div class="note">Antes de cada ejercicio, ejecuten el script subido a CREA<b></b>.</div>`,
+ nt:'.'}];
+let i=0;const $=s=>document.querySelector(s);
+function go(n){i=Math.max(0,Math.min(S.length-1,n));render();scrollTo(0,0)}
+function render(){const s=S[i],r=document.documentElement.style;
+r.setProperty('--ac',s.c);r.setProperty('--ac2',s.c2);
+$('#m').innerHTML=`<div class="hero"><div class="num">${s.n}</div><h2>${s.t}</h2></div>${s.h}<div class="note">📝 ${s.nt}</div>`;
+$('#sec').textContent=s.sec;$('#pg').style.width=((i+1)/S.length*100)+'%';
+$('#pv').disabled=i==0;$('#nx').disabled=i==S.length-1;
+$('#pv').textContent=i?'← '+S[i-1].t:'';$('#nx').textContent=i<S.length-1?S[i+1].t+' →':'';}
+$('#pv').onclick=()=>go(i-1);$('#nx').onclick=()=>go(i+1);
+$('#m').addEventListener('click',e=>{if(e.target.classList.contains('tg'))e.target.nextElementSibling.classList.toggle('open')});
+addEventListener('keydown',e=>{if(e.key=='ArrowRight')go(i+1);if(e.key=='ArrowLeft')go(i-1)});
+render();
+</script></body></html>
